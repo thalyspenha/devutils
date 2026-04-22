@@ -34,12 +34,19 @@ export function JsonFormatterTool() {
 
     try {
       const parsed = JSON.parse(text);
-      const formatted = JSON.stringify(parsed, null, 2);
-      setOutput(formatted);
+      setOutput(JSON.stringify(parsed, null, 2));
       setError(null);
     } catch (err: any) {
-      setOutput('');
-      setError(err.message || 'Invalid JSON format');
+      // Try to fix unescaped backslashes (e.g. Windows paths like C:\Users\...)
+      try {
+        const fixed = text.replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
+        const parsed = JSON.parse(fixed);
+        setOutput(JSON.stringify(parsed, null, 2));
+        setError(null);
+      } catch {
+        setOutput('');
+        setError(err.message || 'Invalid JSON format');
+      }
     }
   };
 
