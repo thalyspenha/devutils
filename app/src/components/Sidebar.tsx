@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
-import { 
-  Code, 
-  Braces, 
+import {
+  Code,
+  Braces,
   Lock,
   Clock,
   Regex,
@@ -12,7 +12,8 @@ import {
   Hash,
   Shield,
   FileDiff,
-  Type
+  Type,
+  Slash
 } from 'lucide-react';
 
 const TOOLS = [
@@ -29,6 +30,7 @@ const TOOLS = [
   { id: 'rsa', name: 'RSA Generator', icon: Shield, path: '/rsa' },
   { id: 'diff', name: 'Text Diff', icon: FileDiff, path: '/diff' },
   { id: 'case', name: 'Case Converter', icon: Type, path: '/case' },
+  { id: 'backslash', name: 'Backslash Escape', icon: Slash, path: '/backslash' },
 ];
 
 export function Sidebar() {

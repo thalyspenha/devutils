@@ -13,6 +13,7 @@ import { HashGeneratorTool } from './components/HashGeneratorTool';
 import { RsaGeneratorTool } from './components/RsaGeneratorTool';
 import { TextDiffTool } from './components/TextDiffTool';
 import { CaseConverterTool } from './components/CaseConverterTool';
+import { BackslashEscapeTool } from './components/BackslashEscapeTool';
 function App() {
   return (
     <HashRouter>
@@ -31,6 +32,7 @@ function App() {
         <Route path="/rsa" element={<RsaGeneratorTool />} />
         <Route path="/diff" element={<TextDiffTool />} />
         <Route path="/case" element={<CaseConverterTool />} />
+        <Route path="/backslash" element={<BackslashEscapeTool />} />
       </Routes>
     </HashRouter>
   );
