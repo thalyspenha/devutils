@@ -19,7 +19,7 @@ import {
 const TOOLS = [
   { id: 'json-formatter', name: 'JSON Formatter', icon: Braces, path: '/' },
   { id: 'base64', name: 'Base64 Formatter', icon: Code, path: '/base64' },
-  { id: 'jwt', name: 'JWT Decoder', icon: Lock, path: '/jwt' },
+  { id: 'jwt', name: 'JWT Tool', icon: Lock, path: '/jwt' },
   { id: 'unix-time', name: 'Unix Time', icon: Clock, path: '/unix-time' },
   { id: 'regexp', name: 'RegExp Tester', icon: Regex, path: '/regexp' },
   { id: 'cron', name: 'Cron Parser', icon: CalendarClock, path: '/cron' },
