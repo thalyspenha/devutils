@@ -14,6 +14,7 @@ import { RsaGeneratorTool } from './components/RsaGeneratorTool';
 import { TextDiffTool } from './components/TextDiffTool';
 import { CaseConverterTool } from './components/CaseConverterTool';
 import { BackslashEscapeTool } from './components/BackslashEscapeTool';
+import { SqlFormatterTool } from './components/SqlFormatterTool';
 function App() {
   return (
     <HashRouter>
@@ -33,6 +34,7 @@ function App() {
         <Route path="/diff" element={<TextDiffTool />} />
         <Route path="/case" element={<CaseConverterTool />} />
         <Route path="/backslash" element={<BackslashEscapeTool />} />
+        <Route path="/sql" element={<SqlFormatterTool />} />
       </Routes>
     </HashRouter>
   );

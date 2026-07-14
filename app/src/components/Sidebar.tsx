@@ -13,7 +13,8 @@ import {
   Shield,
   FileDiff,
   Type,
-  Slash
+  Slash,
+  Database
 } from 'lucide-react';
 
 const TOOLS = [
@@ -31,6 +32,7 @@ const TOOLS = [
   { id: 'diff', name: 'Text Diff', icon: FileDiff, path: '/diff' },
   { id: 'case', name: 'Case Converter', icon: Type, path: '/case' },
   { id: 'backslash', name: 'Backslash Escape', icon: Slash, path: '/backslash' },
+  { id: 'sql', name: 'Formatador de SQL', icon: Database, path: '/sql' },
 ];
 
 export function Sidebar() {
