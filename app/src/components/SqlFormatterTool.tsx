@@ -42,7 +42,8 @@ export function SqlFormatterTool() {
       setOutput(formatted);
       setError('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao formatar SQL');
+      const message = err instanceof Error ? err.message : 'Erro ao formatar SQL';
+      setError(message.split('\n')[0]);
     }
   }, [input, dialect]);
 
