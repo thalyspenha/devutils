@@ -2,16 +2,41 @@
   "name": "app",
   "private": true,
   "version": "0.0.0",
+  "description": "Coleção offline de utilitários para desenvolvedores",
+  "author": "thalys",
   "type": "module",
   "main": "main.cjs",
   "scripts": {
     "dev": "concurrently -k \"vite\" \"npm run electron:dev\"",
     "electron:dev": "wait-on tcp:1234 && cross-env NODE_ENV=development electron .",
-    "build": "tsc -b && vite build && electron-builder -l",
+    "build": "tsc -b && vite build",
+    "dist": "npm run build && electron-builder -l",
     "lint": "eslint .",
     "preview": "vite preview"
   },
+  "build": {
+    "appId": "com.thalys.devutils",
+    "productName": "DevUtils",
+    "executableName": "devutils",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "main.cjs",
+      "preload.cjs",
+      "!node_modules/**"
+    ],
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility"
+    }
+  },
   "dependencies": {
+    "@fontsource/inter": "^5.3.0",
     "cronstrue": "^3.14.0",
     "crypto-js": "^4.2.0",
     "diff": "^9.0.0",

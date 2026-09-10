@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* Fonte Inter empacotada localmente via @fontsource/inter (ver src/main.tsx) —
+   o app é 100% offline, nada de Google Fonts. */
 
 :root {
   --app-bg: #0f172a;           /* slate-900 */
