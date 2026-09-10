@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
-import { Trash2, Copy, FileJson, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Trash2, Copy, Check, FileJson, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useClipboardData } from '../hooks/useClipboardData';
+import { useCopy } from '../hooks/useCopy';
 
 export function JsonFormatterTool() {
   const [input, setInput] = useState('');
+  const { copy, copied } = useCopy();
 
   useClipboardData((text) => {
     if (input) return;
@@ -30,12 +32,6 @@ export function JsonFormatterTool() {
       }
     }
   }, [input]);
-
-  const handleCopy = () => {
-    if (output) {
-      navigator.clipboard.writeText(output);
-    }
-  };
 
   return (
     <div className="main-content">
@@ -71,8 +67,8 @@ export function JsonFormatterTool() {
              <button className="secondary" onClick={() => setInput('')} title="Clear">
                 <Trash2 size={16} />
               </button>
-             <button className="secondary" onClick={handleCopy} disabled={!output} title="Copy Output">
-                <Copy size={16} />
+             <button className="secondary" onClick={() => copy(output)} disabled={!output} title={copied ? 'Copiado!' : 'Copiar'}>
+                {copied ? <Check size={16} color="var(--success-color)" /> : <Copy size={16} />}
               </button>
           </div>
         </div>

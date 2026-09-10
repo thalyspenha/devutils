@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useCopy } from '../hooks/useCopy';
 
 export function RsaGeneratorTool() {
   const [keySize, setKeySize] = useState<number>(2048);
   const [publicKey, setPublicKey] = useState('');
   const [privateKey, setPrivateKey] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const { copy, copiedKey } = useCopy();
 
   const exportPem = (buffer: ArrayBuffer, type: 'PUBLIC KEY' | 'PRIVATE KEY') => {
     const exportedAsString = String.fromCharCode.apply(null, Array.from(new Uint8Array(buffer)));
@@ -52,10 +54,6 @@ export function RsaGeneratorTool() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    if (text) navigator.clipboard.writeText(text);
-  };
-
   return (
     <div className="h-full flex-col">
       <div className="tool-header">
@@ -93,7 +91,7 @@ export function RsaGeneratorTool() {
                <div className="flex-col" style={{ gap: '8px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                      <label style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>Chave Pública</label>
-                     <button className="secondary" style={{ padding: '4px 8px', fontSize: '12px' }} onClick={() => copyToClipboard(publicKey)}>Copiar</button>
+                     <button className={`secondary${copiedKey === 'public' ? ' copied' : ''}`} style={{ padding: '4px 8px', fontSize: '12px' }} onClick={() => copy(publicKey, 'public')}>{copiedKey === 'public' ? 'Copiado!' : 'Copiar'}</button>
                   </div>
                   <textarea 
                      readOnly 
@@ -106,7 +104,7 @@ export function RsaGeneratorTool() {
                <div className="flex-col" style={{ gap: '8px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                      <label style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>Chave Privada</label>
-                     <button className="secondary" style={{ padding: '4px 8px', fontSize: '12px' }} onClick={() => copyToClipboard(privateKey)}>Copiar</button>
+                     <button className={`secondary${copiedKey === 'private' ? ' copied' : ''}`} style={{ padding: '4px 8px', fontSize: '12px' }} onClick={() => copy(privateKey, 'private')}>{copiedKey === 'private' ? 'Copiado!' : 'Copiar'}</button>
                   </div>
                   <textarea 
                      readOnly 

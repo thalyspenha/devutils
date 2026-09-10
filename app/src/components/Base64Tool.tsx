@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react';
-import { ArrowLeftRight, Trash2, Copy } from 'lucide-react';
+import { ArrowLeftRight, Trash2, Copy, Check } from 'lucide-react';
 import { useClipboardData } from '../hooks/useClipboardData';
+import { useCopy } from '../hooks/useCopy';
 
 export function Base64Tool() {
   const [input, setInput] = useState('');
   const [mode, setMode] = useState<'encode' | 'decode'>('encode');
+  const { copy, copied } = useCopy();
 
   useClipboardData((text) => {
     if (input) return;
@@ -33,12 +35,6 @@ export function Base64Tool() {
     setMode(prev => prev === 'encode' ? 'decode' : 'encode');
     // Swap input and output for convenience
     setInput(output);
-  };
-
-  const handleCopy = () => {
-    if (output) {
-      navigator.clipboard.writeText(output);
-    }
   };
 
   const handleClear = () => {
@@ -93,8 +89,8 @@ export function Base64Tool() {
           <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
             <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
               <span style={{ fontWeight: 500 }}>Output</span>
-              <button className="secondary" style={{ padding: '6px' }} onClick={handleCopy} title="Copy to Clipboard">
-                <Copy size={16} />
+              <button className="secondary" style={{ padding: '6px' }} onClick={() => copy(output)} title={copied ? 'Copiado!' : 'Copiar'}>
+                {copied ? <Check size={16} color="var(--success-color)" /> : <Copy size={16} />}
               </button>
             </div>
             {error ? (

@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useCopy } from '../hooks/useCopy';
 
 export function UuidGeneratorTool() {
   const [uuids, setUuids] = useState<string[]>([crypto.randomUUID()]);
   const [count, setCount] = useState(1);
   const [uppercase, setUppercase] = useState(false);
   const [noHyphens, setNoHyphens] = useState(false);
+  const { copy, copied } = useCopy();
 
   const generate = () => {
     const newUuids = [];
@@ -15,10 +17,6 @@ export function UuidGeneratorTool() {
         newUuids.push(uuid);
     }
     setUuids(newUuids);
-  };
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(uuids.join('\n'));
   };
 
   return (
@@ -62,7 +60,7 @@ export function UuidGeneratorTool() {
 
           <div style={{ display: 'flex', gap: '12px' }}>
             <button onClick={generate} style={{ flex: 1 }}>Gerar UUIDs</button>
-            <button className="secondary" onClick={copyToClipboard}>Copiar Todos</button>
+            <button className={`secondary${copied ? ' copied' : ''}`} onClick={() => copy(uuids.join('\n'))}>{copied ? 'Copiado!' : 'Copiar Todos'}</button>
           </div>
 
           <div className="flex-col" style={{ gap: '8px', marginTop: '8px' }}>
