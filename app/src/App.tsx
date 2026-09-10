@@ -1,5 +1,6 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
+import { CommandPalette } from './components/CommandPalette';
 import { JsonFormatterTool } from './components/JsonFormatterTool';
 import { Base64Tool } from './components/Base64Tool';
 import { JwtDecoderTool } from './components/JwtDecoderTool';
@@ -19,6 +20,7 @@ function App() {
   return (
     <HashRouter>
       <Sidebar />
+      <CommandPalette />
       <Routes>
         <Route path="/" element={<JsonFormatterTool />} />
         <Route path="/base64" element={<Base64Tool />} />
