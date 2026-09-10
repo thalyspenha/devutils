@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ArrowRight } from 'lucide-react';
 
 export function UnixTimeConverterTool() {
-  const [currentUnix, setCurrentUnix] = useState(Math.floor(Date.now() / 1000));
-  
+  const [currentUnix, setCurrentUnix] = useState(() => Math.floor(Date.now() / 1000));
+
   // Unix to Date
   const [unixInput, setUnixInput] = useState('');
   const [dateOutput, setDateOutput] = useState<{ local: string; utc: string } | null>(null);
@@ -12,10 +12,10 @@ export function UnixTimeConverterTool() {
   // Date to Unix
   const [dateInput, setDateInput] = useState(() => {
     const now = new Date();
-    // Format to YYYY-MM-DDThh:mm for datetime-local input
-    return now.toISOString().slice(0, 16);
+    // datetime-local espera hora local no formato YYYY-MM-DDThh:mm
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
   });
-  const [unixOutput, setUnixOutput] = useState<number | null>(null);
 
   // Live clock
   useEffect(() => {
@@ -53,18 +53,10 @@ export function UnixTimeConverterTool() {
     });
   };
 
-  const handleDateConvert = () => {
-    if (!dateInput) return;
+  const unixOutput = useMemo<number | null>(() => {
+    if (!dateInput) return null;
     const date = new Date(dateInput);
-    if (!isNaN(date.getTime())) {
-      setUnixOutput(Math.floor(date.getTime() / 1000));
-    } else {
-      setUnixOutput(null);
-    }
-  };
-
-  useEffect(() => {
-    handleDateConvert();
+    return isNaN(date.getTime()) ? null : Math.floor(date.getTime() / 1000);
   }, [dateInput]);
 
   return (

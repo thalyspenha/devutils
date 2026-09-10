@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { ArrowLeftRight, Trash2, Copy } from 'lucide-react';
 import { useClipboardData } from '../hooks/useClipboardData';
 
@@ -38,23 +38,15 @@ function unescape(text: string): string {
 
 export function BackslashEscapeTool() {
   const [input, setInput] = useState('');
-  const [output, setOutput] = useState('');
   const [mode, setMode] = useState<'escape' | 'unescape'>('escape');
 
-  const clipboardData = useClipboardData();
+  useClipboardData((text) => {
+    setInput((cur) => cur || text);
+  });
 
-  useEffect(() => {
-    if (clipboardData && !input) {
-      setInput(clipboardData);
-    }
-  }, [clipboardData]);
-
-  useEffect(() => {
-    if (!input) {
-      setOutput('');
-      return;
-    }
-    setOutput(mode === 'escape' ? escape(input) : unescape(input));
+  const output = useMemo(() => {
+    if (!input) return '';
+    return mode === 'escape' ? escape(input) : unescape(input);
   }, [input, mode]);
 
   const toggleMode = () => {

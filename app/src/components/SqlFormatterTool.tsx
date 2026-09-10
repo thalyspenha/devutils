@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Copy, Trash2 } from 'lucide-react';
 import { format } from 'sql-formatter';
 import { useClipboardData } from '../hooks/useClipboardData';
@@ -15,23 +15,13 @@ const DIALECTS: { value: Dialect; label: string }[] = [
 export function SqlFormatterTool() {
   const [input, setInput] = useState('');
   const [dialect, setDialect] = useState<Dialect>('sql');
-  const [output, setOutput] = useState('');
-  const [error, setError] = useState('');
 
-  const clipboardData = useClipboardData();
+  useClipboardData((text) => {
+    setInput((cur) => cur || text);
+  });
 
-  useEffect(() => {
-    if (clipboardData && !input) {
-      setInput(clipboardData);
-    }
-  }, [clipboardData]);
-
-  useEffect(() => {
-    if (!input.trim()) {
-      setOutput('');
-      setError('');
-      return;
-    }
+  const { output, error } = useMemo<{ output: string; error: string }>(() => {
+    if (!input.trim()) return { output: '', error: '' };
 
     try {
       const formatted = format(input, {
@@ -39,11 +29,10 @@ export function SqlFormatterTool() {
         tabWidth: 2,
         keywordCase: 'upper',
       });
-      setOutput(formatted);
-      setError('');
+      return { output: formatted, error: '' };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao formatar SQL';
-      setError(message.split('\n')[0]);
+      return { output: '', error: message.split('\n')[0] };
     }
   }, [input, dialect]);
 

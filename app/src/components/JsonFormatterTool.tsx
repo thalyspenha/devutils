@@ -1,54 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Trash2, Copy, FileJson, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useClipboardData } from '../hooks/useClipboardData';
 
 export function JsonFormatterTool() {
   const [input, setInput] = useState('');
-  const [output, setOutput] = useState('');
-  const [error, setError] = useState<string | null>(null);
 
-  const clipboardData = useClipboardData();
-
-  useEffect(() => {
-    // Try to parse as JSON first to know if we should auto-paste
-    if (clipboardData && !input) {
-      try {
-        JSON.parse(clipboardData);
-        setInput(clipboardData);
-      } catch (e) {
-        // Not JSON, don't paste
-      }
+  useClipboardData((text) => {
+    if (input) return;
+    try {
+      JSON.parse(text);
+      setInput(text);
+    } catch {
+      // não é JSON, não cola
     }
-  }, [clipboardData]);
+  });
 
-  useEffect(() => {
-    formatJson(input);
-  }, [input]);
-
-  const formatJson = (text: string) => {
-    if (!text.trim()) {
-      setOutput('');
-      setError(null);
-      return;
-    }
+  const { output, error } = useMemo<{ output: string; error: string | null }>(() => {
+    if (!input.trim()) return { output: '', error: null };
 
     try {
-      const parsed = JSON.parse(text);
-      setOutput(JSON.stringify(parsed, null, 2));
-      setError(null);
-    } catch (err: any) {
+      return { output: JSON.stringify(JSON.parse(input), null, 2), error: null };
+    } catch (err) {
       // Try to fix unescaped backslashes (e.g. Windows paths like C:\Users\...)
       try {
-        const fixed = text.replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
-        const parsed = JSON.parse(fixed);
-        setOutput(JSON.stringify(parsed, null, 2));
-        setError(null);
+        const fixed = input.replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
+        return { output: JSON.stringify(JSON.parse(fixed), null, 2), error: null };
       } catch {
-        setOutput('');
-        setError(err.message || 'Invalid JSON format');
+        return { output: '', error: err instanceof Error ? err.message : 'Invalid JSON format' };
       }
     }
-  };
+  }, [input]);
 
   const handleCopy = () => {
     if (output) {

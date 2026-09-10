@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Trash2, AlertCircle, CheckCircle2, Copy } from 'lucide-react';
 import CryptoJS from 'crypto-js';
 import { useClipboardData } from '../hooks/useClipboardData';
@@ -26,9 +26,6 @@ export function JwtDecoderTool() {
 
   // decode state
   const [input, setInput] = useState('');
-  const [header, setHeader] = useState('');
-  const [payload, setPayload] = useState('');
-  const [error, setError] = useState<string | null>(null);
 
   // generate state
   const [payloadText, setPayloadText] = useState(DEFAULT_PAYLOAD);
@@ -36,31 +33,33 @@ export function JwtDecoderTool() {
   const [generatedToken, setGeneratedToken] = useState('');
   const [genError, setGenError] = useState<string | null>(null);
 
-  const clipboardData = useClipboardData();
-
-  useEffect(() => {
-    if (clipboardData && !input) {
-      const parts = clipboardData.split('.');
-      if (parts.length === 3 && clipboardData.length > 20) {
-        setInput(clipboardData);
-      }
+  useClipboardData((text) => {
+    if (input) return;
+    const parts = text.split('.');
+    if (parts.length === 3 && text.length > 20) {
+      setInput(text);
     }
-  }, [clipboardData]);
+  });
 
-  useEffect(() => {
-    if (!input.trim()) { setHeader(''); setPayload(''); setError(null); return; }
+  const { header, payload, error } = useMemo<{ header: string; payload: string; error: string | null }>(() => {
+    if (!input.trim()) return { header: '', payload: '', error: null };
+
     const parts = input.split('.');
     if (parts.length !== 3) {
-      setError('Invalid JWT format. Must contain 3 parts separated by dots.');
-      setHeader(''); setPayload(''); return;
+      return { header: '', payload: '', error: 'Invalid JWT format. Must contain 3 parts separated by dots.' };
     }
     try {
-      setHeader(JSON.stringify(JSON.parse(decodeBase64Url(parts[0])), null, 2));
-      setPayload(JSON.stringify(JSON.parse(decodeBase64Url(parts[1])), null, 2));
-      setError(null);
-    } catch (err: any) {
-      setError('Failed to decode JWT parts. ' + err.message);
-      setHeader(''); setPayload('');
+      return {
+        header: JSON.stringify(JSON.parse(decodeBase64Url(parts[0])), null, 2),
+        payload: JSON.stringify(JSON.parse(decodeBase64Url(parts[1])), null, 2),
+        error: null,
+      };
+    } catch (err) {
+      return {
+        header: '',
+        payload: '',
+        error: 'Failed to decode JWT parts. ' + (err instanceof Error ? err.message : String(err)),
+      };
     }
   }, [input]);
 

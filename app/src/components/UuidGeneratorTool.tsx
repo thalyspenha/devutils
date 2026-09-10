@@ -9,7 +9,7 @@ export function UuidGeneratorTool() {
   const generate = () => {
     const newUuids = [];
     for (let i = 0; i < count; i++) {
-        let uuid = crypto.randomUUID();
+        let uuid: string = crypto.randomUUID();
         if (uppercase) uuid = uuid.toUpperCase();
         if (noHyphens) uuid = uuid.replace(/-/g, '');
         newUuids.push(uuid);

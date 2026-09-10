@@ -4,16 +4,14 @@ export function RegExpTesterTool() {
   const [pattern, setPattern] = useState('');
   const [flags, setFlags] = useState('g');
   const [testString, setTestString] = useState('');
-  const [error, setError] = useState<string | null>(null);
 
-  const matchResult = useMemo(() => {
-    setError(null);
-    if (!pattern) return null;
+  const { matches: matchResult, error } = useMemo<{ matches: RegExpExecArray[] | null; error: string | null }>(() => {
+    if (!pattern) return { matches: null, error: null };
     try {
       const regex = new RegExp(pattern, flags);
-      const matches = [];
-      let match;
-      
+      const matches: RegExpExecArray[] = [];
+      let match: RegExpExecArray | null;
+
       if (regex.global) {
         let lastIndex = -1;
         while ((match = regex.exec(testString)) !== null) {
@@ -27,10 +25,9 @@ export function RegExpTesterTool() {
         match = regex.exec(testString);
         if (match) matches.push(match);
       }
-      return matches;
+      return { matches, error: null };
     } catch (e) {
-      setError((e as Error).message);
-      return null;
+      return { matches: null, error: (e as Error).message };
     }
   }, [pattern, flags, testString]);
 
@@ -77,7 +74,7 @@ export function RegExpTesterTool() {
       }
       
       return <div style={{ whiteSpace: 'pre-wrap', color: 'white' }}>{parts}</div>;
-    } catch (e) {
+    } catch {
       return <div style={{ whiteSpace: 'pre-wrap' }}>{testString}</div>;
     }
   };

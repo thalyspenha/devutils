@@ -1,50 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { ArrowLeftRight, Trash2, Copy } from 'lucide-react';
 import { useClipboardData } from '../hooks/useClipboardData';
 
 export function Base64Tool() {
   const [input, setInput] = useState('');
-  const [output, setOutput] = useState('');
   const [mode, setMode] = useState<'encode' | 'decode'>('encode');
-  const [error, setError] = useState('');
 
-  const clipboardData = useClipboardData();
-
-  useEffect(() => {
-    if (clipboardData && !input) {
-      setInput(clipboardData);
-      // Auto-detect if it looks like Base64 to switch to decode mode automatically
-      const isBase64 = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$/.test(clipboardData);
-      if (isBase64 && clipboardData.length > 0) {
-        setMode('decode');
-      }
+  useClipboardData((text) => {
+    if (input) return;
+    setInput(text);
+    // Auto-detecta Base64 para já mudar para o modo decode
+    const isBase64 = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$/.test(text);
+    if (isBase64 && text.length > 0) {
+      setMode('decode');
     }
-  }, [clipboardData]);
+  });
 
-  useEffect(() => {
-    processText(input, mode);
-  }, [input, mode]);
-
-  const processText = (text: string, currentMode: 'encode' | 'decode') => {
-    setError('');
-    if (!text) {
-      setOutput('');
-      return;
-    }
+  const { output, error } = useMemo<{ output: string; error: string }>(() => {
+    if (!input) return { output: '', error: '' };
 
     try {
-      if (currentMode === 'encode') {
-        const encoded = btoa(unescape(encodeURIComponent(text)));
-        setOutput(encoded);
-      } else {
-        const decoded = decodeURIComponent(escape(atob(text)));
-        setOutput(decoded);
+      if (mode === 'encode') {
+        return { output: btoa(unescape(encodeURIComponent(input))), error: '' };
       }
-    } catch (err) {
-      setError('Invalid input for ' + currentMode);
-      setOutput('');
+      return { output: decodeURIComponent(escape(atob(input))), error: '' };
+    } catch {
+      return { output: '', error: 'Invalid input for ' + mode };
     }
-  };
+  }, [input, mode]);
 
   const toggleMode = () => {
     setMode(prev => prev === 'encode' ? 'decode' : 'encode');
