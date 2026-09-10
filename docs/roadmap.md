@@ -13,11 +13,11 @@
 
 ## Fase 1 — Base de UX e robustez
 
-### 1.1 Command palette (Ctrl/Cmd+K) · P–M
+### 1.1 Command palette (Ctrl/Cmd+K) · P–M · ✅ feito
 - **O quê:** overlay de busca fuzzy sobre `TOOLS[]`; Enter navega. Fecha no Esc / clique fora.
 - **Por quê:** com 15+ ferramentas, achar a tool na sidebar é o gargalo. Maior impacto de UX do projeto.
-- **Toca em:** novo `src/components/CommandPalette.tsx`, `App.tsx` (listener global de tecla + estado de aberto), `Sidebar.tsx` (reusar `TOOLS[]` — talvez extrair para `src/tools.ts`).
-- **Pronto quando:** abre com atalho de qualquer tela, filtra por nome, navega com teclado, sem lib de estado nova (match fuzzy inline ou `useMemo` sobre `TOOLS`).
+- **Entregue:** `src/tools.ts` (array `TOOLS` extraído, consumido por `Sidebar` + palette), `src/components/CommandPalette.tsx` (listener global, match fuzzy inline, `useMemo`, navegação `↑`/`↓`/`Enter`/`Esc`, clique fora), montado em `App.tsx` dentro do `HashRouter`, estilos `.command-palette-*` em `index.css`.
+- **Follow-ups opcionais:** `scrollIntoView` do item selecionado em listas longas; hint visual do atalho na sidebar.
 
 ### 1.2 Persistência leve por ferramenta · P
 - **O quê:** salvar em `localStorage` o último input de cada tool e a última rota aberta; restaurar no mount / no boot.

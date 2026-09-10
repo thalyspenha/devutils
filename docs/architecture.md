@@ -28,7 +28,8 @@ Todo o processamento das ferramentas acontece **localmente no renderer** (no nav
 │   │ Renderer — React SPA (app/src)                         │ │
 │   │  main.tsx → <StrictMode><App/></StrictMode>            │ │
 │   │  App.tsx → <HashRouter>                                │ │
-│   │     ├── <Sidebar/>  (nav fixa, lista TOOLS[])          │ │
+│   │     ├── <Sidebar/>  (nav fixa, itera TOOLS de tools.ts)│ │
+│   │     ├── <CommandPalette/>  (Ctrl/Cmd+K, busca fuzzy)   │ │
 │   │     └── <Routes>  15 rotas → 1 componente-ferramenta   │ │
 │   │                                                       │ │
 │   │  Estado: useState/useEffect/useMemo por componente     │ │
@@ -70,11 +71,12 @@ Script mínimo. No `DOMContentLoaded`, tenta preencher elementos com id `chrome-
 - 15 rotas mapeando 1:1 para um componente-ferramenta (ver `docs/api.md` e `docs/modules.md`).
 - A rota `/` renderiza `JsonFormatterTool` (ferramenta padrão).
 - **Não há** rota 404 / fallback, nem lazy loading (todos os componentes são importados estaticamente).
+- `<CommandPalette/>` (irmão de `<Sidebar/>`, dentro do `HashRouter`) abre com `Ctrl`/`Cmd`+`K` e navega via `useNavigate`.
 
 ### Layout
 
 - `Sidebar` (largura fixa 260px) + `main-content` flexível.
-- `Sidebar` renderiza um array estático `TOOLS[]` (id, name, icon `lucide-react`, path) com `<NavLink>`.
+- `Sidebar` itera o array `TOOLS` de `app/src/tools.ts` (id, name, icon `lucide-react`, path) com `<NavLink>`. O mesmo array alimenta a `CommandPalette`.
 - Cada ferramenta segue o padrão visual: `.tool-header` (título + descrição) + `.tool-body` (conteúdo).
 
 ### Estado e fluxo de dados
@@ -137,11 +139,13 @@ devutils/
         ├── main.tsx
         ├── App.tsx
         ├── index.css
+        ├── tools.ts            # array TOOLS + interface Tool (Sidebar + CommandPalette)
         ├── assets/             # hero.png, vite.svg (não referenciados no código)
         ├── hooks/
         │   └── useClipboardData.ts
         └── components/
             ├── Sidebar.tsx
+            ├── CommandPalette.tsx
             └── *Tool.tsx        # 15 componentes-ferramenta
 ```
 
@@ -149,7 +153,7 @@ devutils/
 
 - **Electron main/renderer** com renderer web puro (sem framework de integração tipo electron-vite plugin).
 - **SPA client-side** com roteamento por hash.
-- **Component-per-feature**: cada utilitário é um componente React autocontido em `src/components/`, registrado em dois lugares (`App.tsx` rota + `Sidebar.tsx` item).
+- **Component-per-feature**: cada utilitário é um componente React autocontido em `src/components/`, registrado em dois lugares (`App.tsx` rota + `src/tools.ts` item, que alimenta `Sidebar` e `CommandPalette`).
 - **Lógica inline no componente** — sem camada de serviços/domínio; bibliotecas prontas (`crypto-js`, `cronstrue`, `sql-formatter`, `diff`, `qrcode.react`) fazem o trabalho pesado.
 - **Derivação de estado** via `useEffect`/`useMemo` a cada mudança de input (formatação "ao vivo", sem botão "processar" na maioria das ferramentas).
 

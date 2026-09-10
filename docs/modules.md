@@ -1,6 +1,6 @@
 # Módulos
 
-> O projeto não tem "módulos" no sentido de backend/pacotes. Esta página lista as **unidades de código** existentes: processo Electron, bootstrap do renderer, navegação, hook compartilhado e os 15 componentes-ferramenta.
+> O projeto não tem "módulos" no sentido de backend/pacotes. Esta página lista as **unidades de código** existentes: processo Electron, bootstrap do renderer, navegação, command palette, hook compartilhado e os 15 componentes-ferramenta.
 
 ## Processo Electron
 
@@ -14,8 +14,10 @@
 | Arquivo | Responsabilidade |
 |---|---|
 | `app/src/main.tsx` | Monta `<App/>` em `#root` via `createRoot`, dentro de `<StrictMode>`. |
-| `app/src/App.tsx` | Define `<HashRouter>`, renderiza `<Sidebar/>` e as 15 `<Route>`. Importa todos os componentes-ferramenta estaticamente. |
-| `app/src/components/Sidebar.tsx` | Navegação lateral. Array estático `TOOLS[]` (id, name, icon, path) renderizado com `<NavLink>`. Cabeçalho fixo "DevUtils Linux". |
+| `app/src/App.tsx` | Define `<HashRouter>`, renderiza `<Sidebar/>`, `<CommandPalette/>` e as 15 `<Route>`. Importa todos os componentes-ferramenta estaticamente. |
+| `app/src/tools.ts` | Fonte única da lista de ferramentas: array `TOOLS` (`id`, `name`, `icon` do `lucide-react`, `path`) + interface `Tool`. Consumido por `Sidebar` e `CommandPalette`. |
+| `app/src/components/Sidebar.tsx` | Navegação lateral. Itera `TOOLS` (de `src/tools.ts`) com `<NavLink>`. Cabeçalho fixo "DevUtils Linux". |
+| `app/src/components/CommandPalette.tsx` | Overlay de busca de ferramentas (atalho `Ctrl`/`Cmd`+`K`, listener global em `window`). Match fuzzy inline sobre `tool.name` (bônus para caracteres consecutivos / início de palavra), lista derivada em `useMemo`. Navegação por teclado (`↑`/`↓`/`Enter`/`Esc`), fecha ao clicar fora. `useNavigate` para ir à rota. |
 | `app/src/index.css` | Único stylesheet global. Variáveis de tema (dark fixo), classes utilitárias, componentes de layout (`.sidebar`, `.tool-header`, `.tool-body`, `.glass-panel`). |
 | `app/src/hooks/useClipboardData.ts` | Hook `useClipboardData(onData, enabled = true)`. Lê o clipboard uma vez (~100ms após mount) via `navigator.clipboard.readText()` e chama `onData(texto)`. Cancela o timer no unmount. Falha silenciosa (`console.warn`) se sem permissão. Não retorna nada — o `setState` acontece no callback. |
 
