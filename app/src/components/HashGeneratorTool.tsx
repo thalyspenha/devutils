@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
 import CryptoJS from 'crypto-js';
+import { useCopy } from '../hooks/useCopy';
 
 export function HashGeneratorTool() {
   const [input, setInput] = useState('');
+  const { copy, copiedKey } = useCopy();
 
   const hashes = useMemo(() => {
     if (!input) return { md5: '', sha1: '', sha256: '', sha512: '' };
@@ -13,10 +15,6 @@ export function HashGeneratorTool() {
       sha512: CryptoJS.SHA512(input).toString(CryptoJS.enc.Hex),
     };
   }, [input]);
-
-  const copyToClipboard = (text: string) => {
-    if (text) navigator.clipboard.writeText(text);
-  };
 
   return (
     <div className="h-full flex-col">
@@ -57,7 +55,7 @@ export function HashGeneratorTool() {
                       fontFamily: 'monospace'
                     }}
                   />
-                  <button className="secondary" onClick={() => copyToClipboard(hashes[algo])}>Copiar</button>
+                  <button className={`secondary${copiedKey === algo ? ' copied' : ''}`} onClick={() => copy(hashes[algo], algo)}>{copiedKey === algo ? 'Copiado!' : 'Copiar'}</button>
                 </div>
               </div>
             ))}

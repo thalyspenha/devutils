@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
-import { Trash2, AlertCircle, CheckCircle2, Copy } from 'lucide-react';
+import { Trash2, AlertCircle, CheckCircle2, Copy, Check } from 'lucide-react';
 import CryptoJS from 'crypto-js';
 import { useClipboardData } from '../hooks/useClipboardData';
+import { useCopy } from '../hooks/useCopy';
 
 const DEFAULT_PAYLOAD = () => {
   const now = Math.floor(Date.now() / 1000);
@@ -32,6 +33,7 @@ export function JwtDecoderTool() {
   const [secret, setSecret] = useState('your-256-bit-secret');
   const [generatedToken, setGeneratedToken] = useState('');
   const [genError, setGenError] = useState<string | null>(null);
+  const { copy, copied } = useCopy();
 
   useClipboardData((text) => {
     if (input) return;
@@ -188,8 +190,8 @@ export function JwtDecoderTool() {
                     readOnly
                     style={{ height: '80px', fontFamily: 'monospace', flex: 1, background: 'var(--sidebar-bg)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '10px 12px' }}
                   />
-                  <button className="secondary" onClick={() => navigator.clipboard.writeText(generatedToken)} title="Copiar">
-                    <Copy size={16} />
+                  <button className="secondary" onClick={() => copy(generatedToken)} title={copied ? 'Copiado!' : 'Copiar'}>
+                    {copied ? <Check size={16} color="var(--success-color)" /> : <Copy size={16} />}
                   </button>
                 </div>
               </div>

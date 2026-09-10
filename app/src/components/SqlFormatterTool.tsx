@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
-import { Copy, Trash2 } from 'lucide-react';
+import { Copy, Check, Trash2 } from 'lucide-react';
 import { format } from 'sql-formatter';
 import { useClipboardData } from '../hooks/useClipboardData';
+import { useCopy } from '../hooks/useCopy';
 
 type Dialect = 'sql' | 'mysql' | 'postgresql' | 'mariadb';
 
@@ -15,6 +16,7 @@ const DIALECTS: { value: Dialect; label: string }[] = [
 export function SqlFormatterTool() {
   const [input, setInput] = useState('');
   const [dialect, setDialect] = useState<Dialect>('sql');
+  const { copy, copied } = useCopy();
 
   useClipboardData((text) => {
     setInput((cur) => cur || text);
@@ -35,12 +37,6 @@ export function SqlFormatterTool() {
       return { output: '', error: message.split('\n')[0] };
     }
   }, [input, dialect]);
-
-  const handleCopy = () => {
-    if (output) {
-      navigator.clipboard.writeText(output);
-    }
-  };
 
   const handleClear = () => {
     setInput('');
@@ -91,8 +87,8 @@ export function SqlFormatterTool() {
           <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
             <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
               <span style={{ fontWeight: 500 }}>Output</span>
-              <button className="secondary" style={{ padding: '6px' }} onClick={handleCopy} title="Copiar">
-                <Copy size={16} />
+              <button className="secondary" style={{ padding: '6px' }} onClick={() => copy(output)} title={copied ? 'Copiado!' : 'Copiar'}>
+                {copied ? <Check size={16} color="var(--success-color)" /> : <Copy size={16} />}
               </button>
             </div>
             {error ? (

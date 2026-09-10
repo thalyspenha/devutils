@@ -70,6 +70,7 @@ Script mínimo. No `DOMContentLoaded`, tenta preencher elementos com id `chrome-
 - 15 rotas mapeando 1:1 para um componente-ferramenta (ver `docs/api.md` e `docs/modules.md`).
 - A rota `/` renderiza `JsonFormatterTool` (ferramenta padrão).
 - **Não há** rota 404 / fallback, nem lazy loading (todos os componentes são importados estaticamente).
+- As rotas ficam dentro de um `<ErrorBoundary>` (wrapper `ToolRoutes` em `App.tsx`): um erro de render numa ferramenta mostra uma tela de recuperação em vez de derrubar o app. O boundary reseta ao trocar de rota (`resetKey={location.pathname}`).
 
 ### Layout
 

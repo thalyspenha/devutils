@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useCopy } from '../hooks/useCopy';
 
 type CaseType = 'camelCase' | 'snake_case' | 'PascalCase' | 'kebab-case' | 'UPPERCASE' | 'lowercase' | 'CONSTANT_CASE';
 
 export function CaseConverterTool() {
   const [input, setInput] = useState('');
+  const { copy, copied } = useCopy();
 
   const getWords = (str: string) => {
     return str.replace(/([a-z])([A-Z])/g, '$1 $2').split(/[\s_-]+/).filter(Boolean).map(w => w.toLowerCase());
@@ -41,10 +43,6 @@ export function CaseConverterTool() {
     setInput(convertCase(type));
   };
 
-  const copyToClipboard = () => {
-    if (input) navigator.clipboard.writeText(input);
-  };
-
   return (
     <div className="h-full flex-col">
       <div className="tool-header">
@@ -58,7 +56,7 @@ export function CaseConverterTool() {
           <div className="flex-col" style={{ gap: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                <label style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-secondary)' }}>Texto</label>
-               <button className="secondary" style={{ padding: '4px 8px', fontSize: '12px' }} onClick={copyToClipboard}>Copiar</button>
+               <button className={`secondary${copied ? ' copied' : ''}`} style={{ padding: '4px 8px', fontSize: '12px' }} onClick={() => copy(input)}>{copied ? 'Copiado!' : 'Copiar'}</button>
             </div>
             <textarea 
               value={input}

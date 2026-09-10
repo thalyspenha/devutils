@@ -1,6 +1,6 @@
 # Módulos
 
-> O projeto não tem "módulos" no sentido de backend/pacotes. Esta página lista as **unidades de código** existentes: processo Electron, bootstrap do renderer, navegação, hook compartilhado e os 15 componentes-ferramenta.
+> O projeto não tem "módulos" no sentido de backend/pacotes. Esta página lista as **unidades de código** existentes: processo Electron, bootstrap do renderer, navegação, error boundary, hooks compartilhados e os 15 componentes-ferramenta.
 
 ## Processo Electron
 
@@ -14,15 +14,21 @@
 | Arquivo | Responsabilidade |
 |---|---|
 | `app/src/main.tsx` | Monta `<App/>` em `#root` via `createRoot`, dentro de `<StrictMode>`. |
-| `app/src/App.tsx` | Define `<HashRouter>`, renderiza `<Sidebar/>` e as 15 `<Route>`. Importa todos os componentes-ferramenta estaticamente. |
+| `app/src/App.tsx` | Define `<HashRouter>`, renderiza `<Sidebar/>` e `<ToolRoutes/>`. `ToolRoutes` envolve as 15 `<Route>` num `<ErrorBoundary resetKey={location.pathname}>`. Importa todos os componentes-ferramenta estaticamente. |
 | `app/src/components/Sidebar.tsx` | Navegação lateral. Array estático `TOOLS[]` (id, name, icon, path) renderizado com `<NavLink>`. Cabeçalho fixo "DevUtils Linux". |
-| `app/src/index.css` | Único stylesheet global. Variáveis de tema (dark fixo), classes utilitárias, componentes de layout (`.sidebar`, `.tool-header`, `.tool-body`, `.glass-panel`). |
+| `app/src/components/ErrorBoundary.tsx` | Class component. Captura erros de render de qualquer ferramenta (`getDerivedStateFromError`) e mostra uma tela de recuperação (`.error-boundary`) com a mensagem + botão "Tentar de novo", em vez de tela branca. Reseta sozinho quando `resetKey` muda (troca de rota). |
+| `app/src/index.css` | Único stylesheet global. Variáveis de tema (dark fixo), classes utilitárias, componentes de layout (`.sidebar`, `.tool-header`, `.tool-body`, `.glass-panel`, `.error-boundary`). |
 | `app/src/hooks/useClipboardData.ts` | Hook `useClipboardData(onData, enabled = true)`. Lê o clipboard uma vez (~100ms após mount) via `navigator.clipboard.readText()` e chama `onData(texto)`. Cancela o timer no unmount. Falha silenciosa (`console.warn`) se sem permissão. Não retorna nada — o `setState` acontece no callback. |
+| `app/src/hooks/useCopy.ts` | Hook `useCopy(timeout = 1500)`. Retorna `{ copy, copiedKey, copied }`. `copy(text, key?)` escreve no clipboard e marca `copiedKey` por `timeout` ms (feedback "Copiado!" nos botões). Telas com um botão usam `copied`; telas com vários (RSA, Hash) passam uma `key` e comparam com `copiedKey`. Falha silenciosa se o clipboard estiver indisponível. |
 
 ### `useClipboardData` — consumidores
 
 Usam o hook para auto-preencher o input no mount (somente se o input estiver vazio):
 `JsonFormatterTool` (só cola se o texto for JSON válido), `Base64Tool` (detecta Base64 e muda para modo decode), `JwtDecoderTool` (só cola se tiver 3 partes separadas por `.` e >20 chars), `BackslashEscapeTool`, `SqlFormatterTool`.
+
+### `useCopy` — consumidores
+
+Todos os botões de copiar do app: `JsonFormatterTool`, `Base64Tool`, `JwtDecoderTool` (aba Gerar), `SqlFormatterTool`, `BackslashEscapeTool`, `CaseConverterTool`, `UuidGeneratorTool`, `PasswordGeneratorTool`, `RsaGeneratorTool` (2 botões, `key` `public`/`private`), `HashGeneratorTool` (`key` = algoritmo).
 
 ## Componentes-ferramenta
 

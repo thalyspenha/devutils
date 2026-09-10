@@ -26,15 +26,15 @@
 - **Cuidado:** não persistir campos sensíveis por padrão (secret do JWT, chave privada RSA, senha gerada). Opt-out explícito nesses.
 - **Pronto quando:** fechar e reabrir mantém input e tool; limpar o campo limpa o storage.
 
-### 1.3 Error boundary global · P
+### 1.3 Error boundary global · P · ✅ feito
 - **O quê:** `<ErrorBoundary>` em volta das `<Routes>` com tela de "essa ferramenta quebrou" + botão de reset.
 - **Por quê:** hoje um `throw` em qualquer componente apaga o app inteiro (tela branca, sem recuperação).
-- **Toca em:** novo `src/components/ErrorBoundary.tsx`, `App.tsx`.
+- **Entregue:** `src/components/ErrorBoundary.tsx` (class component, `getDerivedStateFromError`, reseta ao mudar `resetKey`); `App.tsx` envolve as rotas com `<ErrorBoundary resetKey={location.pathname}>` no wrapper `ToolRoutes`; estilos `.error-boundary` em `index.css`. Reseta sozinho ao navegar + botão "Tentar de novo".
 
-### 1.4 Feedback de "copiado" · P
-- **O quê:** toast/tooltip curto ("Copiado!") ao clicar nos botões de copiar.
-- **Por quê:** todos os `navigator.clipboard.writeText` são silenciosos — o usuário não sabe se funcionou.
-- **Toca em:** helper `src/hooks/useCopy.ts` (retorna `copy` + estado `copied` com timeout) usado nos ~10 botões "Copiar".
+### 1.4 Feedback de "copiado" · P · ✅ feito
+- **O quê:** feedback curto ("Copiado!") ao clicar nos botões de copiar.
+- **Por quê:** todos os `navigator.clipboard.writeText` eram silenciosos — o usuário não sabia se funcionou.
+- **Entregue:** `src/hooks/useCopy.ts` (`{ copy, copiedKey, copied }`, timeout 1.5s, suporta várias `key` por tela); adotado nos 10 componentes com botão de copiar. Botão de texto troca para "Copiado!" (verde nos `.secondary`); botão de ícone troca `<Copy>` por `<Check>` verde. Sem toast/portal novo.
 
 ### 1.5 Consistência de idioma e identidade · P
 - **O quê:** padronizar a UI em PT-BR (hoje JSON/Base64/RegExp/Unix/Backslash estão em inglês); unificar o nome: `<title>` = "Devtools", sidebar = "DevUtils Linux", `productName` = "DevUtils".

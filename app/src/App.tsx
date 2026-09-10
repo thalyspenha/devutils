@@ -1,5 +1,6 @@
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { JsonFormatterTool } from './components/JsonFormatterTool';
 import { Base64Tool } from './components/Base64Tool';
 import { JwtDecoderTool } from './components/JwtDecoderTool';
@@ -15,10 +16,11 @@ import { TextDiffTool } from './components/TextDiffTool';
 import { CaseConverterTool } from './components/CaseConverterTool';
 import { BackslashEscapeTool } from './components/BackslashEscapeTool';
 import { SqlFormatterTool } from './components/SqlFormatterTool';
-function App() {
+
+function ToolRoutes() {
+  const location = useLocation();
   return (
-    <HashRouter>
-      <Sidebar />
+    <ErrorBoundary resetKey={location.pathname}>
       <Routes>
         <Route path="/" element={<JsonFormatterTool />} />
         <Route path="/base64" element={<Base64Tool />} />
@@ -36,6 +38,15 @@ function App() {
         <Route path="/backslash" element={<BackslashEscapeTool />} />
         <Route path="/sql" element={<SqlFormatterTool />} />
       </Routes>
+    </ErrorBoundary>
+  );
+}
+
+function App() {
+  return (
+    <HashRouter>
+      <Sidebar />
+      <ToolRoutes />
     </HashRouter>
   );
 }

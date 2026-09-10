@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useCopy } from '../hooks/useCopy';
 
 export function PasswordGeneratorTool() {
   const [password, setPassword] = useState('');
+  const { copy, copied } = useCopy();
   const [length, setLength] = useState(16);
   const [includeUppercase, setIncludeUppercase] = useState(true);
   const [includeLowercase, setIncludeLowercase] = useState(true);
@@ -35,10 +37,6 @@ export function PasswordGeneratorTool() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [length, includeUppercase, includeLowercase, includeNumbers, includeSymbols]);
 
-  const copyToClipboard = () => {
-    if (password) navigator.clipboard.writeText(password);
-  };
-
   return (
     <div className="h-full flex-col">
        <div className="tool-header">
@@ -66,11 +64,11 @@ export function PasswordGeneratorTool() {
                  color: 'var(--accent-color)'
                }}
              />
-             <button 
-                onClick={copyToClipboard}
+             <button
+                onClick={() => copy(password)}
                 style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)' }}
              >
-               Copiar
+               {copied ? 'Copiado!' : 'Copiar'}
              </button>
           </div>
 
