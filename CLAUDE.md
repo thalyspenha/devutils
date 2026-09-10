@@ -77,5 +77,6 @@ Documentação detalhada em **`/docs`**:
 | [`docs/testing.md`](docs/testing.md) | Estratégia de verificação (lint + manual); `test-forge.js` |
 | [`docs/dependencies.md`](docs/dependencies.md) | Todas as dependências e para que servem |
 | [`docs/decisions.md`](docs/decisions.md) | Decisões de arquitetura e divergências código × specs |
+| [`docs/roadmap.md`](docs/roadmap.md) | Backlog priorizado: melhorias de UX/infra, ferramentas novas, dívida técnica conhecida |
 
 Specs/planos de features pré-existentes: `docs/superpowers/`.
