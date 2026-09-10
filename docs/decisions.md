@@ -63,12 +63,14 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 - **Decisão:** um `index.css` global, tema dark fixo por CSS vars, classes utilitárias próprias (`.flex`, `.glass-panel`, `.tool-header`…), e `style={{}}` inline para o resto. Sem Tailwind.
 - **Evidência:** `index.css`; os planos reforçam *"Sem Tailwind — só CSS vars e classes utilitárias já existentes"*.
 - **Racional:** documentado nos planos como restrição do projeto.
+- **Fonte:** Inter empacotada via `@fontsource/inter` (importada em `src/main.tsx`). Antes vinha de `fonts.googleapis.com` por `@import` no CSS — trocado para manter o app 100% offline (ver D14).
 
 ## D9 — Formatação "ao vivo" (sem botão "processar")
 
-- **Decisão:** recalcular output a cada mudança de input via `useEffect`/`useMemo`.
+- **Decisão:** recalcular output a cada mudança de input, derivando com `useMemo`.
 - **Evidência:** padrão em JSON, Base64, Hash, RegExp, Cron, SQL, Backslash, Diff.
-- **Racional:** Não identificado; consistente com UX de "ferramenta instantânea". Exceções são operações caras (RSA, senha, geração de UUID em lote, geração de JWT).
+- **Racional:** Não identificado; consistente com UX de "ferramenta instantânea". Exceções são operações caras / com ação explícita (RSA, senha, geração de UUID em lote, geração de JWT, timestamp→data).
+- **Nota de implementação:** originalmente algumas tools sincronizavam o output em `useState` via `useEffect`; migrado para `useMemo` derivado puro (o `eslint-plugin-react-hooks` v7 barra `setState` dentro de efeito/render).
 
 ## D10 — Registro de ferramenta em dois pontos
 
@@ -88,6 +90,24 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 - **Evidência:** commit `874267f` — *"mostra só a primeira linha do erro de parse SQL, não o dump da gramática"*.
 - **Racional:** documentado no commit — a lib joga a gramática inteira na mensagem de erro.
 
+## D13 — Configuração explícita do electron-builder + split `build`/`dist`
+
+- **Decisão:** bloco `build` em `package.json` (antes: só defaults). `npm run build` = só o renderer (`tsc -b && vite build`); `npm run dist` = renderer + `electron-builder -l`.
+- **Evidência:** `app/package.json` (`build` field), commit `eaf847b`.
+- **Racional:** o `build` antigo embutia `electron-builder` e estava quebrado; separar deixa o type-check/bundle rápido e reutilizável (CI). `directories.output: release` evita colisão com o `dist/` do Vite. `files` sem `node_modules` porque o renderer já é bundizado (asar 51 MB → 1 MB).
+
+## D14 — Fonte empacotada, zero rede
+
+- **Decisão:** `@fontsource/inter` (subset `latin`, 400–700) importado em `src/main.tsx`, em vez de `@import` do Google Fonts.
+- **Evidência:** `src/main.tsx`, `src/index.css`, `package.json`, commit `eaf847b`.
+- **Racional:** o app se propõe offline-first (privacidade — dados nunca saem da máquina); o `@import` era a única requisição de rede e contradizia isso.
+
+## D15 — `useClipboardData` com API de callback
+
+- **Decisão:** `useClipboardData(onData, enabled?)` — hook chama o callback com o texto do clipboard; o `setState` do auto-preenchimento acontece no callback, não em `useEffect`.
+- **Evidência:** `src/hooks/useClipboardData.ts`, commit `7a24379`.
+- **Racional:** o `eslint-plugin-react-hooks` v7 (`set-state-in-effect`) barra `setState` sincronizado dentro de efeito; a API de callback resolve isso e ainda cancela o timer no unmount.
+
 ---
 
 ## Divergências entre decisão documentada e código
@@ -97,12 +117,12 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 | V1 | Spec JWT (2026-06-09) | Renomear export `JwtDecoderTool` → `JwtTool` e atualizar import em `App.tsx` | O export continua `JwtDecoderTool`; `App.tsx` importa `JwtDecoderTool`. Só o título/label viraram "JWT Tool". |
 | V2 | Spec SQL (2026-07-14) | Label do Sidebar: "Formatar SQL" | Label real: "Formatador de SQL" (o plano posterior usa "Formatador de SQL" — o plano venceu). |
 | V3 | Planos (`superpowers`) | Referenciam um `CLAUDE.md` na raiz com "padrão de componente" | `CLAUDE.md` não existia até esta documentação. |
-| V4 | Config dev | `wait-on tcp:1234` + `main.cjs` → `localhost:1234` | `vite.config.ts` não define `server.port` (default 5173). Ver `docs/infrastructure.md`. |
+| ~~V4~~ | ~~Config dev: porta 1234 vs default 5173 do Vite~~ | **Resolvido** no commit `7a24379`: `vite.config.ts` fixa `server.port: 1234`. |
 
 ## Itens sem decisão documentada (Racional: Não identificado)
 
 - Escolha das versões de Electron 41 / Vite 8 / React 19.
 - Ausência de `contextBridge` / IPC.
 - Mistura de idiomas na UI (PT-BR e EN coexistem: "JSON Formatter"/"Format, validate…" vs. "Formatador de SQL"/"Formata queries…").
-- Nome do produto: `index.html` `<title>` = "Devtools"; Sidebar = "DevUtils Linux"; diretório = `devutils`.
+- Nome do produto: `index.html` `<title>` = "Devtools"; Sidebar = "DevUtils Linux"; `productName` do electron-builder = "DevUtils"; diretório = `devutils`.
 - Ausência de CI, Dockerfile, `engines`/`.nvmrc`.

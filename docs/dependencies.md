@@ -6,6 +6,7 @@
 
 | Pacote | Versão | Onde é usado | Finalidade |
 |---|---|---|---|
+| `@fontsource/inter` | `^5.3.0` | `src/main.tsx` | Fonte **Inter** empacotada (subset `latin`, pesos 400/500/600/700). Substitui o `@import` do Google Fonts — app 100% offline. |
 | `react` | `^19.2.4` | todo o renderer | Biblioteca de UI |
 | `react-dom` | `^19.2.4` | `main.tsx` | Renderização no DOM (`createRoot`) |
 | `react-router-dom` | `^7.13.1` | `App.tsx`, `Sidebar.tsx` | Roteamento client-side (`HashRouter`, `Routes`, `Route`, `NavLink`) |
@@ -27,7 +28,7 @@
 | `@vitejs/plugin-react` | `^6.0.0` | Suporte a React/JSX/Fast Refresh no Vite |
 | `typescript` | `~5.9.3` | Compilador / type-check (`tsc -b`) |
 | `electron` | `^41.0.2` | Runtime desktop |
-| `electron-builder` | `^26.8.1` | Empacotamento (`electron-builder -l`) |
+| `electron-builder` | `^26.8.1` | Empacotamento Linux/AppImage (`npm run dist`); config no bloco `build` do `package.json` |
 | `concurrently` | `^9.2.1` | Roda `vite` + `electron:dev` juntos |
 | `cross-env` | `^10.1.0` | Define `NODE_ENV` de forma portável |
 | `wait-on` | `^9.0.4` | Espera `tcp:1234` antes de abrir o Electron |

@@ -4,10 +4,10 @@
 
 ## Regras transversais
 
-- **Processamento 100% local.** Nenhum dado inserido nas ferramentas é enviado para fora da máquina. Não há telemetria, analytics ou logging remoto.
+- **Processamento 100% local.** Nenhum dado inserido nas ferramentas é enviado para fora da máquina. Não há telemetria, analytics ou logging remoto. O app não faz nenhuma requisição de rede (a fonte Inter é empacotada — ver `docs/integrations.md`).
 - **Auto-preenchimento por clipboard.** Ferramentas que usam `useClipboardData` copiam o conteúdo do clipboard para o input **apenas se o input estiver vazio** no mount. Algumas aplicam um filtro antes de colar (ver abaixo).
-- **Formatação "ao vivo".** A maioria das ferramentas recalcula o output a cada tecla (via `useEffect`/`useMemo`), sem botão "processar". Exceções com ação explícita: `UuidGenerator` ("Gerar"), `PasswordGenerator` ("Gerar Outra Senha"), `RsaGenerator` ("Gerar Chaves"), `JwtDecoder` aba Gerar ("Gerar JWT"), `UnixTime` timestamp→data ("Convert").
-- **Erros não destroem o input.** Em geral, entrada inválida mostra mensagem de erro e limpa/preserva o output, mas mantém o que o usuário digitou.
+- **Formatação "ao vivo".** A maioria das ferramentas recalcula o output a cada tecla (derivado com `useMemo`), sem botão "processar". Exceções com ação explícita: `UuidGenerator` ("Gerar"), `PasswordGenerator` ("Gerar Outra Senha"), `RsaGenerator` ("Gerar Chaves"), `JwtDecoder` aba Gerar ("Gerar JWT"), `UnixTime` timestamp→data ("Convert").
+- **Erros não destroem o input.** Entrada inválida mostra mensagem de erro e zera o output, mas mantém o que o usuário digitou.
 - **Tema dark fixo.** Não há troca de tema.
 - **Textos de UI misturam PT-BR e EN** (ver `docs/decisions.md`).
 
@@ -49,7 +49,7 @@
 - Relógio ao vivo em segundos, atualizado a cada 1s.
 - **Timestamp → data**: heurística — valor `> 1e12` é tratado como **milissegundos**, senão como **segundos**. Saída: horário local (`toLocaleString`) e UTC (`toUTCString`). Valor fora de faixa → "Invalid timestamp value out of range."
 - Entrada não numérica → "Invalid number format."
-- **Data → timestamp**: `datetime-local` interpretado como **horário local**; saída em **segundos** (`Math.floor(ms/1000)`). Reativo (sem botão).
+- **Data → timestamp**: `datetime-local` interpretado como **horário local**; saída em **segundos** (`Math.floor(ms/1000)`). Reativo (sem botão), derivado com `useMemo`. Valor inicial do campo = agora em horário local.
 
 ## RegExp Tester (`/regexp`)
 
@@ -132,7 +132,7 @@
 - Dialetos: `sql` (genérico, default), `mysql`, `postgresql`, `mariadb` — mapeiam 1:1 para a opção `language`.
 - Indentação (2 espaços) e keywords em maiúsculo são **fixos** (não expostos na UI).
 - Trocar o dialeto reformata o SQL já digitado.
-- Em erro de parse: exibe **apenas a primeira linha** da mensagem de erro (`message.split('\n')[0]`) — decisão registrada no commit `874267f` para não despejar a gramática inteira. O último output válido permanece visível.
+- Em erro de parse: exibe **apenas a primeira linha** da mensagem de erro (`message.split('\n')[0]`) — decisão registrada no commit `874267f` para não despejar a gramática inteira. O painel de output passa a mostrar o erro (não mantém mais o último SQL formatado).
 
 ## O que não foi identificado
 

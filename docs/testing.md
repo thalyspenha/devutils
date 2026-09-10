@@ -24,7 +24,9 @@ Evidências:
 ### 2. Type-check (`tsc -b`, dentro de `npm run build`)
 
 - `tsconfig.app.json`: `strict`, `noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`, `erasableSyntaxOnly`, `verbatimModuleSyntax`, `jsx: react-jsx`, `moduleResolution: bundler`.
-- Ver ressalva sobre `import React` não utilizado em `docs/infrastructure.md` (pode fazer `tsc -b` falhar; não verificado).
+- `npm run build` = `tsc -b && vite build` (o empacotamento saiu para `npm run dist`).
+- Estado: **`npm run lint`, `tsc -b` e `vite build` passam (exit 0)** — verificado. Antes falhavam (imports/`setState`-em-efeito/tipo de `crypto.randomUUID`); corrigido nos commits `7a24379` / `eaf847b`.
+- O `eslint-plugin-react-hooks` v7 traz regras do React Compiler (`set-state-in-effect`, `set-state-in-render`, `purity`, `immutability`) — foram o motivo da maior parte dos ajustes.
 
 ### 3. Teste manual documentado
 

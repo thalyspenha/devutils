@@ -81,7 +81,7 @@ Script mínimo. No `DOMContentLoaded`, tenta preencher elementos com id `chrome-
 
 - **Sem store global** (sem Redux/Zustand/Context de estado). Cada componente gerencia o próprio estado com `useState` / `useEffect` / `useMemo`.
 - Padrão dominante: input controlado → recálculo derivado (em `useEffect` ou `useMemo`) → output read-only.
-- Único código compartilhado de comportamento: `app/src/hooks/useClipboardData.ts` — lê `navigator.clipboard.readText()` uma vez após o mount (delay de 100ms) e retorna o texto; usado por várias ferramentas para auto-preencher o input.
+- Único código compartilhado de comportamento: `app/src/hooks/useClipboardData.ts` — `useClipboardData(onData, enabled?)` lê `navigator.clipboard.readText()` uma vez após o mount (delay de 100ms) e chama `onData(texto)`; várias ferramentas usam para auto-preencher o input (só se estiver vazio). O `setState` acontece no callback, não em efeito.
 - **Sem IPC**: o renderer não se comunica com o processo main em runtime.
 
 ### Estilização
@@ -91,7 +91,7 @@ Script mínimo. No `DOMContentLoaded`, tenta preencher elementos com id `chrome-
   - Variáveis CSS (`--app-bg`, `--accent-color`, `--text-primary`, `--error-color`, etc.) — tema dark fixo.
   - Classes utilitárias artesanais (`.flex`, `.flex-col`, `.flex-1`, `.glass-panel`, `.tool-header`, `.tool-body`, …).
   - Estilos inline (`style={{…}}`) para ajustes pontuais em quase todos os componentes.
-- Fonte `Inter` importada de `fonts.googleapis.com` via `@import` no CSS (única requisição de rede externa do app — ver `docs/integrations.md`).
+- Fonte `Inter` empacotada via `@fontsource/inter` (importada em `src/main.tsx`, subset `latin` 400–700). O app não faz nenhuma requisição de rede externa (ver `docs/integrations.md`).
 
 ## Build / empacotamento
 
@@ -101,13 +101,14 @@ Script mínimo. No `DOMContentLoaded`, tenta preencher elementos com id `chrome-
 |---|---|---|
 | `dev` | `concurrently -k "vite" "npm run electron:dev"` | Sobe Vite + Electron juntos |
 | `electron:dev` | `wait-on tcp:1234 && cross-env NODE_ENV=development electron .` | Espera o dev server e abre o Electron |
-| `build` | `tsc -b && vite build && electron-builder -l` | Type-check, bundle e empacota para Linux |
+| `build` | `tsc -b && vite build` | Type-check + bundle do renderer para `dist/` |
+| `dist` | `npm run build && electron-builder -l` | Build + empacota AppImage em `release/` |
 | `lint` | `eslint .` | Lint |
 | `preview` | `vite preview` | Preview do bundle Vite |
 
 - `main` do `package.json` = `main.cjs`.
-- `electron-builder -l` empacota para **Linux** apenas. Não há bloco `build` de configuração do electron-builder — usa os defaults da ferramenta.
-- **Inconsistência de porta**: `electron:dev` espera `tcp:1234` e `main.cjs` carrega `http://localhost:1234`, mas `app/vite.config.ts` **não** define `server.port`. O default do Vite é `5173`. Ver `docs/infrastructure.md` e `docs/decisions.md`.
+- `vite.config.ts`: `base: './'` (assets sob `file://`) e `server.port: 1234` (casa com o fluxo dev).
+- `electron-builder -l` empacota para **Linux** (target `AppImage`). Config no bloco `build` do `package.json` (`appId`, `productName`, `directories.output: release`, `files` sem `node_modules`, ícone `app/build/icon.png`). Ver `docs/infrastructure.md`.
 
 ## Estrutura de diretórios
 
@@ -129,7 +130,8 @@ devutils/
     ├── tsconfig*.json
     ├── eslint.config.js
     ├── test-forge.js           # script manual ad-hoc (ver docs/testing.md)
-    ├── package.json
+    ├── package.json            # inclui o bloco "build" do electron-builder
+    ├── build/                  # icon.png (512x512) + icon.svg — recursos do electron-builder
     ├── public/                 # favicon.svg, icons.svg
     └── src/
         ├── main.tsx

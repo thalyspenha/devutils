@@ -17,7 +17,7 @@
 | `app/src/App.tsx` | Define `<HashRouter>`, renderiza `<Sidebar/>` e as 15 `<Route>`. Importa todos os componentes-ferramenta estaticamente. |
 | `app/src/components/Sidebar.tsx` | Navegação lateral. Array estático `TOOLS[]` (id, name, icon, path) renderizado com `<NavLink>`. Cabeçalho fixo "DevUtils Linux". |
 | `app/src/index.css` | Único stylesheet global. Variáveis de tema (dark fixo), classes utilitárias, componentes de layout (`.sidebar`, `.tool-header`, `.tool-body`, `.glass-panel`). |
-| `app/src/hooks/useClipboardData.ts` | Hook. Lê o clipboard uma vez (~100ms após mount) via `navigator.clipboard.readText()`; retorna string. Falha silenciosa (`console.warn`) se sem permissão. Parâmetro `autoRead` (default `true`). |
+| `app/src/hooks/useClipboardData.ts` | Hook `useClipboardData(onData, enabled = true)`. Lê o clipboard uma vez (~100ms após mount) via `navigator.clipboard.readText()` e chama `onData(texto)`. Cancela o timer no unmount. Falha silenciosa (`console.warn`) se sem permissão. Não retorna nada — o `setState` acontece no callback. |
 
 ### `useClipboardData` — consumidores
 
@@ -30,11 +30,11 @@ Todos em `app/src/components/`. Colunas: rota, bibliotecas externas além de Rea
 
 | Componente | Rota | Libs | Resumo | Estado |
 |---|---|---|---|---|
-| `JsonFormatterTool` | `/` | — | Valida e identa JSON (`JSON.parse` + `JSON.stringify(…, 2)`). Fallback: tenta corrigir backslashes não escapados antes de falhar. | `input`, `output`, `error` |
-| `Base64Tool` | `/base64` | — | Encode/decode Base64 (`btoa`/`atob` com `escape`/`unescape` para UTF-8). Botão de swap troca input↔output e inverte o modo. | `input`, `output`, `mode`, `error` |
-| `JwtDecoderTool` | `/jwt` | `crypto-js` | Abas **Decodificar** (split por `.`, base64url-decode de header/payload) e **Gerar** (assina HS256 com `CryptoJS.HmacSHA256`). Não verifica assinatura na aba decode. | decode: `input`,`header`,`payload`,`error`; generate: `payloadText`,`secret`,`generatedToken`,`genError`; `activeTab` |
-| `UnixTimeConverterTool` | `/unix-time` | — | Relógio Unix ao vivo (`setInterval` 1s). Timestamp→data (heurística: `>1e12` = ms, senão s; local + UTC). Data→timestamp (`datetime-local`, reativo). | `currentUnix`, `unixInput`, `dateOutput`, `unixError`, `dateInput`, `unixOutput` |
-| `RegExpTesterTool` | `/regexp` | — | Testa regex ao vivo (`new RegExp(pattern, flags)`). Destaca matches no texto, lista matches + capture groups (limite de exibição: 50). Guarda contra loop de match zero-width. | `pattern`, `flags`, `testString`, `error` (+ `matchResult` via `useMemo`) |
+| `JsonFormatterTool` | `/` | — | Valida e identa JSON (`JSON.parse` + `JSON.stringify(…, 2)`). Fallback: tenta corrigir backslashes não escapados antes de falhar. | `input` (+ `output`/`error` via `useMemo`) |
+| `Base64Tool` | `/base64` | — | Encode/decode Base64 (`btoa`/`atob` com `escape`/`unescape` para UTF-8). Botão de swap troca input↔output e inverte o modo. | `input`, `mode` (+ `output`/`error` via `useMemo`) |
+| `JwtDecoderTool` | `/jwt` | `crypto-js` | Abas **Decodificar** (split por `.`, base64url-decode de header/payload) e **Gerar** (assina HS256 com `CryptoJS.HmacSHA256`). Não verifica assinatura na aba decode. | decode: `input` (+ `header`/`payload`/`error` via `useMemo`); generate: `payloadText`,`secret`,`generatedToken`,`genError`; `activeTab` |
+| `UnixTimeConverterTool` | `/unix-time` | — | Relógio Unix ao vivo (`setInterval` 1s). Timestamp→data (heurística: `>1e12` = ms, senão s; local + UTC). Data→timestamp (`datetime-local`, reativo; init em hora local). | `currentUnix`, `unixInput`, `dateOutput`, `unixError`, `dateInput` (+ `unixOutput` via `useMemo`) |
+| `RegExpTesterTool` | `/regexp` | — | Testa regex ao vivo (`new RegExp(pattern, flags)`). Destaca matches no texto, lista matches + capture groups (limite de exibição: 50). Guarda contra loop de match zero-width. | `pattern`, `flags`, `testString` (+ `matchResult`/`error` via `useMemo`) |
 | `CronParserTool` | `/cron` | `cronstrue/i18n` | Traduz expressão cron para texto em `pt_BR`. Cálculo síncrono no render (sem `useState` de output). Lista de exemplos estática. | `expression` |
 | `QrCodeGeneratorTool` | `/qrcode` | `qrcode.react` (`QRCodeSVG`) | Gera QR em SVG (nível de correção `L`). Controles: texto, tamanho (128–512, step 16), cor de código, cor de fundo. Botão baixa o SVG via `Blob` + `<a download>`. | `text`, `size`, `fgColor`, `bgColor` |
 | `UuidGeneratorTool` | `/uuid` | — | Gera UUID v4 via `crypto.randomUUID()`. Opções: quantidade (1–1000, sanitizada), maiúsculas, sem hífens. Copiar todos. | `uuids[]`, `count`, `uppercase`, `noHyphens` |
@@ -42,8 +42,8 @@ Todos em `app/src/components/`. Colunas: rota, bibliotecas externas além de Rea
 | `RsaGeneratorTool` | `/rsa` | — (WebCrypto) | Gera par RSA via `window.crypto.subtle.generateKey({name:'RSA-OAEP', hash:'SHA-256'}, …, ['encrypt','decrypt'])`. Exporta SPKI/PKCS8 → PEM manual (base64 + wrap 64). Tamanhos: 1024/2048/4096. `alert()` em erro. | `keySize`, `publicKey`, `privateKey`, `isGenerating` |
 | `TextDiffTool` | `/diff` | `diff` (`Diff.diffLines`) | Compara dois textos linha a linha; renderiza `+`/`-`/contexto com cores. | `original`, `modified` (+ `diffResult` via `useMemo`) |
 | `CaseConverterTool` | `/case` | — | Converte o texto entre camelCase, PascalCase, snake_case, kebab-case, CONSTANT_CASE, UPPERCASE, lowercase. **Sobrescreve o próprio input** com o resultado (in-place). Tokenização por regex (`a-z`→`A-Z`, espaços, `_`, `-`). | `input` |
-| `BackslashEscapeTool` | `/backslash` | — | Escapa/desescapa sequências (`\\`, `\n`, `\r`, `\t`, `\0`, `\"`, `\'`, `\b`, `\f`, `\v`) via mapas + regex. Swap input↔output. Legenda de sequências suportadas. | `input`, `output`, `mode` |
-| `SqlFormatterTool` | `/sql` | `sql-formatter` (`format`) | Formata SQL ao vivo. Dropdown de dialeto (`sql`/`mysql`/`postgresql`/`mariadb` → opção `language`). `tabWidth: 2`, `keywordCase: 'upper'` fixos. Em erro, exibe **só a primeira linha** da mensagem e mantém o último output. | `input`, `dialect`, `output`, `error` |
+| `BackslashEscapeTool` | `/backslash` | — | Escapa/desescapa sequências (`\\`, `\n`, `\r`, `\t`, `\0`, `\"`, `\'`, `\b`, `\f`, `\v`) via mapas + regex. Swap input↔output. Legenda de sequências suportadas. | `input`, `mode` (+ `output` via `useMemo`) |
+| `SqlFormatterTool` | `/sql` | `sql-formatter` (`format`) | Formata SQL ao vivo. Dropdown de dialeto (`sql`/`mysql`/`postgresql`/`mariadb` → opção `language`). `tabWidth: 2`, `keywordCase: 'upper'` fixos. Em erro, exibe **só a primeira linha** da mensagem. | `input`, `dialect` (+ `output`/`error` via `useMemo`) |
 
 ### Observações por componente
 
@@ -60,6 +60,7 @@ Todos em `app/src/components/`. Colunas: rota, bibliotecas externas além de Rea
 | `app/public/favicon.svg` | Favicon referenciado em `index.html`. |
 | `app/public/icons.svg` | Sprite SVG (ícones de redes sociais: bluesky, etc.). **Não referenciado** em nenhum componente. |
 | `app/src/assets/hero.png`, `app/src/assets/vite.svg` | **Não referenciados** no código. |
+| `app/build/icon.png` (+ `icon.svg` fonte) | Ícone do app (512×512), consumido pelo electron-builder no empacotamento. |
 
 ## O que não foi identificado
 

@@ -14,10 +14,10 @@
 |---|---|
 | Shell desktop | Electron `^41` (`app/main.cjs`, `app/preload.cjs`) |
 | UI | React `19` + TypeScript `~5.9`, `react-router-dom` `7` (`HashRouter`) |
-| Build | Vite `^8` + `@vitejs/plugin-react`; empacotamento `electron-builder -l` |
+| Build | Vite `^8` + `@vitejs/plugin-react` (`npm run build` = `tsc -b && vite build`); empacotamento `electron-builder -l` via `npm run dist` |
 | Ícones | `lucide-react` |
 | Libs de domínio | `crypto-js` (hash/HMAC), `cronstrue` (cron), `sql-formatter` (SQL), `diff` (texto), `qrcode.react` (QR) |
-| Estilo | `app/src/index.css` único: CSS vars (tema dark fixo) + classes utilitárias próprias. **Sem Tailwind.** |
+| Estilo | `app/src/index.css` único: CSS vars (tema dark fixo) + classes utilitárias próprias. **Sem Tailwind.** Fonte Inter via `@fontsource/inter` (empacotada, offline) — importada em `src/main.tsx`. |
 | Testes | Nenhum. Só `npm run lint` + verificação manual (`npm run dev`). |
 
 ## 3. Arquitetura resumida
@@ -54,10 +54,11 @@ Electron main (app/main.cjs)  ──cria──►  BrowserWindow única
   3. Adicionar item no array `TOOLS[]` de `app/src/components/Sidebar.tsx` (`id`, `name` em PT-BR, `icon` do `lucide-react`, `path`).
 - Estilo: usar CSS vars (`var(--text-primary)`, `var(--accent-color)`, `var(--error-color)`, `var(--border-color)`, `var(--app-bg)`…), classes utilitárias existentes (`flex`, `flex-col`, `flex-1`, `glass-panel`, `secondary`) e `style={{}}` inline para ajustes. Sem CSS novo global salvo necessidade real.
 - Lógica **inline no componente** — não criar hooks/abstrações novas sem motivo.
-- Cálculo derivado em `useEffect`/`useMemo`; try/catch em volta de parsers, erro em `var(--error-color)` sem apagar o input.
+- Cálculo derivado em `useMemo` (preferir sobre `useEffect` + estado espelho — o `eslint-plugin-react-hooks` v7 barra `setState` dentro de efeito/render); try/catch em volta de parsers, erro em `var(--error-color)` sem apagar o input.
+- `useClipboardData(onData, enabled?)`: recebe callback; o `setState` do auto-preenchimento roda no callback (fora de efeito), com guarda de "só se o input estiver vazio".
 - Commits: mensagens curtas em PT-BR, prefixo `feat:` / `fix:` / `docs:` (padrão observável no histórico recente).
-- Verificação antes de commitar: `cd app && npm run lint` e teste manual com `cd app && npm run dev`.
-- ⚠️ Ao editar `JsonFormatterTool.tsx` / `Base64Tool.tsx` / `JwtDecoderTool.tsx`: eles têm `import React` não utilizado (tolerado pelo esbuild, mas quebra `tsc -b`). Remover o `React` do import se for mexer no arquivo.
+- Verificação antes de commitar: `cd app && npm run lint && npm run build` (lint + `tsc -b` + `vite build`, todos verdes) e teste manual com `cd app && npm run dev`.
+- ⚠️ `tsc -b` roda com `noUnusedLocals`/`noUnusedParameters`: nada de imports/vars/params não usados (ex.: `import React` sem uso quebra o build). `catch (e)` sem uso → usar `catch {}`.
 
 ## 6. Documentação
 
