@@ -1,0 +1,7 @@
+# direnv / nix-direnv
+.direnv/
+.direnv.local
+
+# resultado do nix-build, se rodado na raiz
+result
+result-*

@@ -6,6 +6,7 @@
 
 - Todo o processamento é **local**, no renderer. Não há backend, banco de dados, API de rede, autenticação, filas ou persistência.
 - O código-fonte da aplicação fica em **`app/`** (a raiz do repositório não tem `package.json`). **Rode todos os comandos npm dentro de `app/`.**
+- Ambiente de dev via Nix: `shell.nix` na raiz (`nodejs_24` + `electron_41` + `ELECTRON_OVERRIDE_DIST_PATH`, necessário porque o Electron do npm não linka no NixOS). `nix-shell` ou `direnv allow` (`.envrc` = `use nix`).
 - Idioma: a UI mistura PT-BR e inglês; **novas strings de UI devem ser em PT-BR**.
 
 ## 2. Stack

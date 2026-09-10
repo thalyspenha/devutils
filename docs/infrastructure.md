@@ -37,7 +37,14 @@ Definido em `app/package.json`:
 - `main.cjs` (dev) faz `loadURL('http://localhost:1234')`.
 - `vite.config.ts` define `server: { port: 1234, strictPort: true }` — casa com o `wait-on tcp:1234` e o `loadURL(:1234)`. (Antes o Vite subia na 5173 default e o fluxo dev não destravava — corrigido.)
 
-> ⚠️ **Electron em NixOS:** o binário `electron@41` baixado pelo npm não roda direto (`libglib-2.0.so.0: cannot open shared object file`). Precisa de `nix-ld`, um FHS env, ou rodar via o `electron` do nixpkgs. Não afeta o empacotamento final (a AppImage traz o runtime).
+> ⚠️ **Electron em NixOS:** o binário `electron@41` baixado pelo npm não roda direto (`libglib-2.0.so.0: cannot open shared object file`). O `shell.nix` na raiz resolve isso: traz `nodejs_24` + `electron_41` do nixpkgs e exporta `ELECTRON_OVERRIDE_DIST_PATH`, fazendo o pacote npm `electron` usar o binário do nixpkgs. Entra com `nix-shell` ou automático via `.envrc` (`direnv allow`). Não afeta o empacotamento (`npm run dist` baixa o dist oficial p/ AppImage portável).
+
+## Ambiente reprodutível (Nix)
+
+- `shell.nix` (raiz) — `nodejs_24`, `electron_41`, `resvg` (regen do ícone) + `ELECTRON_OVERRIDE_DIST_PATH`.
+- `.envrc` — `use nix` (nix-direnv). `direnv allow` uma vez → o shell carrega ao entrar na pasta.
+- `.gitignore` (raiz) — ignora `.direnv/` e `result*`.
+- Ainda **sem** `engines`/`.nvmrc` no `app/package.json` (o `shell.nix` cobre a versão de Node em dev).
 
 ## Configuração de runtime
 
