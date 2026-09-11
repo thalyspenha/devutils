@@ -4,40 +4,7 @@ import { useClipboardData } from '../hooks/useClipboardData';
 import { useCopy } from '../hooks/useCopy';
 import { ToolLayout } from './ToolLayout';
 import { ToolPanel } from './ToolPanel';
-
-const ESCAPE_MAP: Record<string, string> = {
-  '\\': '\\\\',
-  '\n': '\\n',
-  '\r': '\\r',
-  '\t': '\\t',
-  '\0': '\\0',
-  '"': '\\"',
-  "'": "\\'",
-  '\b': '\\b',
-  '\f': '\\f',
-  '\v': '\\v',
-};
-
-const UNESCAPE_MAP: Record<string, string> = {
-  '\\\\': '\\',
-  '\\n': '\n',
-  '\\r': '\r',
-  '\\t': '\t',
-  '\\0': '\0',
-  '\\"': '"',
-  "\\'": "'",
-  '\\b': '\b',
-  '\\f': '\f',
-  '\\v': '\v',
-};
-
-function escape(text: string): string {
-  return text.replace(/[\\"\n\r\t\0\b\f\v']/g, (ch) => ESCAPE_MAP[ch] ?? ch);
-}
-
-function unescape(text: string): string {
-  return text.replace(/\\(\\|n|r|t|0|"|'|b|f|v)/g, (seq) => UNESCAPE_MAP[seq] ?? seq);
-}
+import { escape, unescape } from '../lib/backslashEscape';
 
 export function BackslashEscapeTool() {
   const [input, setInput] = useState('');

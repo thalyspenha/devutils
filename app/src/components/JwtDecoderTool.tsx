@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { Trash2, AlertCircle, CheckCircle2, Copy, Check, ClipboardPaste } from 'lucide-react';
-import CryptoJS from 'crypto-js';
 import { useClipboardData } from '../hooks/useClipboardData';
 import { useCopy } from '../hooks/useCopy';
 import { ToolLayout } from './ToolLayout';
 import { ToolPanel } from './ToolPanel';
+import { encodeBase64Url, decodeBase64Url, signHS256 } from '../lib/jwt';
 
 const PANEL_LABEL_STYLE: CSSProperties = {
   color: 'var(--text-secondary)',
@@ -18,19 +18,6 @@ const DEFAULT_PAYLOAD = () => {
   const now = Math.floor(Date.now() / 1000);
   return JSON.stringify({ sub: '1234567890', iat: now, exp: now + 3600 }, null, 2);
 };
-
-function encodeBase64Url(str: string): string {
-  return btoa(unescape(encodeURIComponent(str)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
-}
-
-function decodeBase64Url(str: string): string {
-  str = str.replace(/-/g, '+').replace(/_/g, '/');
-  while (str.length % 4) str += '=';
-  return decodeURIComponent(escape(atob(str)));
-}
 
 export function JwtDecoderTool() {
   const [activeTab, setActiveTab] = useState<'decode' | 'generate'>('decode');
@@ -78,11 +65,7 @@ export function JwtDecoderTool() {
     if (headerAlg !== 'HS256') return 'unsupported-alg';
 
     const [headerB64, payloadB64, signatureB64] = input.split('.');
-    const expectedSignature = CryptoJS.HmacSHA256(`${headerB64}.${payloadB64}`, verifySecret)
-      .toString(CryptoJS.enc.Base64)
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
+    const expectedSignature = signHS256(`${headerB64}.${payloadB64}`, verifySecret);
     return expectedSignature === signatureB64 ? 'valid' : 'invalid';
   }, [input, verifySecret, headerAlg, error]);
 
@@ -97,11 +80,7 @@ export function JwtDecoderTool() {
     const headerB64 = encodeBase64Url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
     const payloadB64 = encodeBase64Url(payloadText);
     const message = `${headerB64}.${payloadB64}`;
-    const signature = CryptoJS.HmacSHA256(message, secret)
-      .toString(CryptoJS.enc.Base64)
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
+    const signature = signHS256(message, secret);
     setGeneratedToken(`${message}.${signature}`);
     setGenError(null);
   };

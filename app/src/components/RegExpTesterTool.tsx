@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { ToolLayout } from './ToolLayout';
+import { execAllMatches } from '../lib/regexTester';
 
 export function RegExpTesterTool() {
   const [pattern, setPattern] = useState('');
@@ -9,24 +10,7 @@ export function RegExpTesterTool() {
   const { matches: matchResult, error } = useMemo<{ matches: RegExpExecArray[] | null; error: string | null }>(() => {
     if (!pattern) return { matches: null, error: null };
     try {
-      const regex = new RegExp(pattern, flags);
-      const matches: RegExpExecArray[] = [];
-      let match: RegExpExecArray | null;
-
-      if (regex.global) {
-        let lastIndex = -1;
-        while ((match = regex.exec(testString)) !== null) {
-          if (regex.lastIndex === lastIndex) {
-            regex.lastIndex++;
-          }
-          lastIndex = regex.lastIndex;
-          matches.push(match);
-        }
-      } else {
-        match = regex.exec(testString);
-        if (match) matches.push(match);
-      }
-      return { matches, error: null };
+      return { matches: execAllMatches(pattern, flags, testString), error: null };
     } catch (e) {
       return { matches: null, error: (e as Error).message };
     }
@@ -37,47 +21,24 @@ export function RegExpTesterTool() {
       return <div style={{ whiteSpace: 'pre-wrap', color: 'var(--text-secondary)' }}>{testString || 'As correspondências serão destacadas aqui...'}</div>;
     }
 
-    try {
-      const regex = new RegExp(pattern, flags);
-      const parts = [];
-      let lastIndex = 0;
-      let match;
-      
-      if (regex.global) {
-        let prevLastIndex = -1;
-        while ((match = regex.exec(testString)) !== null) {
-          if (regex.lastIndex === prevLastIndex) {
-             regex.lastIndex++;
-          }
-          prevLastIndex = regex.lastIndex;
-          
-          if (match.index > lastIndex) {
-            parts.push(<span key={`text-${lastIndex}`}>{testString.substring(lastIndex, match.index)}</span>);
-          }
-          if (match[0].length > 0) {
-            parts.push(<span key={`match-${match.index}`} style={{ backgroundColor: 'rgba(56, 189, 248, 0.3)', color: 'var(--accent)', borderRadius: '2px', padding: '0 2px' }}>{match[0]}</span>);
-          }
-          lastIndex = match.index + match[0].length;
-        }
-      } else {
-        match = regex.exec(testString);
-        if (match) {
-          if (match.index > lastIndex) {
-            parts.push(<span key={`text-${lastIndex}`}>{testString.substring(lastIndex, match.index)}</span>);
-          }
-          parts.push(<span key={`match-${match.index}`} style={{ backgroundColor: 'rgba(56, 189, 248, 0.3)', color: 'var(--accent)', borderRadius: '2px', padding: '0 2px' }}>{match[0]}</span>);
-          lastIndex = match.index + match[0].length;
-        }
+    const parts = [];
+    let lastIndex = 0;
+
+    for (const match of matchResult) {
+      if (match.index > lastIndex) {
+        parts.push(<span key={`text-${lastIndex}`}>{testString.substring(lastIndex, match.index)}</span>);
       }
-      
-      if (lastIndex < testString.length) {
-        parts.push(<span key={`text-${lastIndex}`}>{testString.substring(lastIndex)}</span>);
+      if (match[0].length > 0) {
+        parts.push(<span key={`match-${match.index}`} style={{ backgroundColor: 'rgba(56, 189, 248, 0.3)', color: 'var(--accent)', borderRadius: '2px', padding: '0 2px' }}>{match[0]}</span>);
       }
-      
-      return <div style={{ whiteSpace: 'pre-wrap', color: 'white' }}>{parts}</div>;
-    } catch {
-      return <div style={{ whiteSpace: 'pre-wrap' }}>{testString}</div>;
+      lastIndex = match.index + match[0].length;
     }
+
+    if (lastIndex < testString.length) {
+      parts.push(<span key={`text-${lastIndex}`}>{testString.substring(lastIndex)}</span>);
+    }
+
+    return <div style={{ whiteSpace: 'pre-wrap', color: 'white' }}>{parts}</div>;
   };
 
   return (

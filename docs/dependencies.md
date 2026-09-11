@@ -32,6 +32,12 @@
 | `cross-env` | `^10.1.0` | Define `NODE_ENV` de forma portável |
 | `wait-on` | `^9.0.4` | Espera `tcp:1234` antes de abrir o Electron |
 
+### Testes
+
+| Pacote | Versão | Finalidade |
+|---|---|---|
+| `vitest` | `^5.0.0` | Runner de testes de unidade (`npm test` = `vitest run`), config em `vitest.config.ts` (plugin React, ambiente `node`) |
+
 ### Lint
 
 | Pacote | Versão | Finalidade |

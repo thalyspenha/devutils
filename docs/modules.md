@@ -1,6 +1,6 @@
 # Módulos
 
-> O projeto não tem "módulos" no sentido de backend/pacotes. Esta página lista as **unidades de código** existentes: processo Electron, bootstrap do renderer, navegação, command palette, error boundary, shell de ferramenta compartilhado (`ToolLayout`/`ToolPanel`), hooks compartilhados e os 15 componentes-ferramenta.
+> O projeto não tem "módulos" no sentido de backend/pacotes. Esta página lista as **unidades de código** existentes: processo Electron, bootstrap do renderer, navegação, command palette, error boundary, shell de ferramenta compartilhado (`ToolLayout`/`ToolPanel`), hooks compartilhados, funções puras testáveis (`src/lib/`) e os 15 componentes-ferramenta.
 
 ## Processo Electron
 
@@ -29,6 +29,18 @@
 ### `useClipboardData` — consumidores
 
 Todas têm um botão "Colar da área de transferência" (ícone `ClipboardPaste`) perto do campo de input, que chama a função retornada pelo hook: `JsonFormatterTool`, `Base64Tool` (detecta Base64 no texto colado e muda para modo decode), `JwtDecoderTool`, `BackslashEscapeTool`, `SqlFormatterTool`.
+
+## Renderer — lógica pura (`app/src/lib/`)
+
+Funções sem dependência de React, extraídas dos componentes correspondentes para poderem ser testadas com Vitest sem montar a árvore (ver `docs/testing.md`, item 2.1 do roadmap). Cada arquivo tem um `*.test.ts` irmão.
+
+| Arquivo | Usado por | Responsabilidade |
+|---|---|---|
+| `app/src/lib/caseConverter.ts` | `CaseConverterTool` | `getWords`/`toCamelCase`/`toPascalCase`/`toSnakeCase`/`toKebabCase`/`toConstantCase`/`convertCase`. |
+| `app/src/lib/backslashEscape.ts` | `BackslashEscapeTool` | `escape`/`unescape` de sequências `\n`, `\t`, `\\`, `\"`, etc. |
+| `app/src/lib/jwt.ts` | `JwtDecoderTool` | `encodeBase64Url`/`decodeBase64Url`, `signHS256` (HMAC-SHA256 via `crypto-js`, usada tanto para verificar quanto para gerar). |
+| `app/src/lib/unixTime.ts` | `UnixTimeConverterTool` | `parseUnixInput` — heurística ms vs segundos (`> 1e12`). |
+| `app/src/lib/regexTester.ts` | `RegExpTesterTool` | `execAllMatches` — roda `RegExp.exec` em loop com guarda contra matches de largura zero (evita loop infinito). |
 
 ### `useCopy` — consumidores
 

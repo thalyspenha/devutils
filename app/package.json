@@ -15,7 +15,8 @@
     "build": "tsc -b && vite build",
     "dist": "npm run build && electron-builder -l",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run"
   },
   "build": {
     "appId": "com.thalys.devutils",
@@ -68,6 +69,7 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^8.0.0",
+    "vitest": "^5.0.0",
     "wait-on": "^9.0.4"
   },
   "allowScripts": {

@@ -38,16 +38,16 @@
 
 ## Fase 2 — Qualidade e infraestrutura
 
-### 2.1 Testes com Vitest nas funções puras · M
+### 2.1 Testes com Vitest nas funções puras · M · ✅ feito
 - **O quê:** `vitest` + testes de unidade nas partes com lógica não-trivial:
-  - `CaseConverterTool` — `getWords`/`toCamelCase`/… (tokenização é frágil)
-  - `BackslashEscapeTool` — `escape`/`unescape` (round-trip)
-  - `JwtDecoderTool` — `encodeBase64Url`/`decodeBase64Url`, assinatura HS256
-  - `UnixTimeConverterTool` — heurística ms vs s (`> 1e12`)
-  - `RegExpTesterTool` — guarda contra match zero-width
-- **Por quê:** essa lógica é onde moram os bugs sutis e hoje não há rede de segurança nenhuma.
-- **Toca em:** `app/package.json` (dep + script `test`), `vitest.config.ts`, `*.test.ts` ao lado dos componentes. Idealmente extrair as funções puras para fora do componente para testar sem React.
-- **Pronto quando:** `npm test` roda localmente; cobre os 5 itens acima.
+  - `getWords`/`toCamelCase`/… (tokenização de `CaseConverterTool`)
+  - `escape`/`unescape` (round-trip, `BackslashEscapeTool`)
+  - `encodeBase64Url`/`decodeBase64Url`, `signHS256` (`JwtDecoderTool`)
+  - heurística ms vs s `> 1e12` (`UnixTimeConverterTool`)
+  - guarda contra match zero-width (`RegExpTesterTool`)
+- **Por quê:** essa lógica é onde moram os bugs sutis e não havia rede de segurança nenhuma.
+- **Entregue:** `app/package.json` (dep `vitest` + script `test`: `vitest run`), `app/vitest.config.ts` (plugin React, ambiente `node`). As 5 funções puras foram extraídas dos componentes para `app/src/lib/{caseConverter,backslashEscape,jwt,unixTime,regexTester}.ts` (necessário: exportar função + componente do mesmo arquivo `.tsx` quebra `react-refresh/only-export-components`); cada módulo tem seu `*.test.ts` ao lado, 29 testes no total. A extração também eliminou duas duplicações pré-existentes: `signHS256` (HMAC calculado 2x em `JwtDecoderTool`, agora 1 função) e `execAllMatches` (loop de matching duplicado entre contagem/detalhes e o highlight em `RegExpTesterTool`, agora reaproveitado).
+- **Pronto quando:** `npm test` roda localmente; cobre os 5 itens acima. ✅ `npm test`, `npm run lint` e `npm run build` passam (rodados com Node 24 via `mise exec node@24 --`, pois o Node 26 do shell padrão quebra a extração do Electron — D18).
 
 ### 2.3 Limpeza de dependências mortas · P · ✅ feito
 - **O quê:** remover `node-forge`, `@types/node-forge`, `@types/qrcode.react` (v4 traz tipos), avaliar `@types/diff`; apagar `app/test-forge.js`.

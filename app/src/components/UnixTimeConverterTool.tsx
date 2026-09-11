@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { ToolLayout } from './ToolLayout';
+import { parseUnixInput } from '../lib/unixTime';
 
 export function UnixTimeConverterTool() {
   const [currentUnix, setCurrentUnix] = useState(() => Math.floor(Date.now() / 1000));
@@ -29,28 +30,18 @@ export function UnixTimeConverterTool() {
   const handleUnixConvert = () => {
     setUnixError('');
     setDateOutput(null);
-    
+
     if (!unixInput.trim()) return;
 
-    const num = Number(unixInput);
-    if (isNaN(num)) {
-      setUnixError('Formato de número inválido.');
-      return;
-    }
-
-    // Heuristic: if > 1e12, it's likely milliseconds. Otherwise, seconds.
-    const isMilliseconds = num > 1e12;
-    const ms = isMilliseconds ? num : num * 1000;
-    
-    const date = new Date(ms);
-    if (isNaN(date.getTime())) {
-      setUnixError('Valor de timestamp fora do intervalo válido.');
+    const result = parseUnixInput(unixInput);
+    if (!result.ok) {
+      setUnixError(result.error);
       return;
     }
 
     setDateOutput({
-      local: date.toLocaleString(),
-      utc: date.toUTCString()
+      local: result.date.toLocaleString(),
+      utc: result.date.toUTCString()
     });
   };
 
