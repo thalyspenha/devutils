@@ -5,7 +5,7 @@
 
 ## Como usar
 
-- 3 fases sugeridas, na ordem: **UX/robustez → qualidade/infra → ferramentas novas**. A Fase 2 (testes + CI) faz a Fase 3 ficar barata e segura.
+- 3 fases sugeridas, na ordem: **UX/robustez → qualidade/infra → ferramentas novas**. A Fase 2 (testes) faz a Fase 3 ficar barata e segura.
 - Cada item tem: **O quê** · **Por quê** · **Esforço** (P = <½ dia, M = 1–2 dias, G = maior) · **Toca em** · **Pronto quando**.
 - Respeitar sempre as restrições do `CLAUDE.md`: sem backend/rede/persistência remota, sem Tailwind/CSS-in-JS/state global, manter `HashRouter`, strings novas em PT-BR, `useMemo` para derivação.
 
@@ -54,18 +54,12 @@
   - `RegExpTesterTool` — guarda contra match zero-width
 - **Por quê:** essa lógica é onde moram os bugs sutis e hoje não há rede de segurança nenhuma.
 - **Toca em:** `app/package.json` (dep + script `test`), `vitest.config.ts`, `*.test.ts` ao lado dos componentes. Idealmente extrair as funções puras para fora do componente para testar sem React.
-- **Pronto quando:** `npm test` roda no CI; cobre os 5 itens acima.
+- **Pronto quando:** `npm test` roda localmente; cobre os 5 itens acima.
 
-### 2.2 CI no GitHub Actions · P
-- **O quê:** workflow que roda `npm ci && npm run lint && npm run build && npm test` em PR; e `npm run dist` + upload da AppImage em push de tag `v*`.
-- **Por quê:** hoje nada valida uma mudança antes do merge (ver `docs/infrastructure.md` — "CI/CD: não existe").
-- **Toca em:** `.github/workflows/ci.yml`. Runner `ubuntu-latest`, Node 24 (casar com `engines.node` em `app/package.json`).
-
-### 2.3 Limpeza de dependências mortas · P · ✅ parcialmente feito
+### 2.3 Limpeza de dependências mortas · P · ✅ feito
 - **O quê:** remover `node-forge`, `@types/node-forge`, `@types/qrcode.react` (v4 traz tipos), avaliar `@types/diff`; apagar `app/test-forge.js`.
 - **Por quê:** resíduo da abordagem antiga de RSA (ver `docs/decisions.md` D7); ruído no `package.json`.
-- **Entregue:** `node-forge`, `@types/node-forge` removidos de `app/package.json`/`package-lock.json`; `app/test-forge.js` apagado.
-- **Falta:** avaliar/remover `@types/qrcode.react` (tipos da v1 para lib na v4) e `@types/diff` (possível redundância).
+- **Entregue:** `node-forge`, `@types/node-forge` removidos de `app/package.json`/`package-lock.json`; `app/test-forge.js` apagado. `@types/qrcode.react` (tipos da v1, desatualizados — a lib instalada é a v4) e `@types/diff` removidos: confirmado via `node_modules/{qrcode.react,diff}/package.json` que ambos já publicam seu próprio `types` (`./lib/index.d.ts` e `libcjs/index.d.ts` respectivamente), então os pacotes `@types/*` eram redundantes. `npm uninstall @types/diff @types/qrcode.react`; `tsc -b` resolveu os tipos das próprias libs sem erro.
 
 ### 2.4 Endurecer a segurança do Electron · M · ✅ feito
 - **O quê:** `contextIsolation: true` + `nodeIntegration: false` + `contextBridge` no `preload.cjs` expondo só o necessário (hoje: nada); adicionar `<meta http-equiv="Content-Security-Policy">` no `index.html`.
