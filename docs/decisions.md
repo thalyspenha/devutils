@@ -147,6 +147,15 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 - **Trade-off:** as outras 10 tools (campo único ou múltiplos campos, sem par input/output) só adotaram `ToolLayout` — forçar `ToolPanel` nelas seria abstração sem motivo real (contra a seção 5 do `CLAUDE.md`). Nenhum CSS novo: os dois componentes reusam classes já existentes em `index.css` (`main-content`, `tool-header`, `glass-panel`, `flex-*`).
 - **Consequência:** `ToolLayout` não força um único `.tool-body` — `children` fica livre, o que permite o `JwtDecoderTool` (barra de abas entre o header e dois `.tool-body` condicionais) usar o mesmo componente sem gambiarra.
 
+## D22 — Testes de unidade com Vitest + extração de `src/lib/`
+
+- **Decisão:** `vitest` adicionado como `devDependency` (script `npm test` = `vitest run`, config em `app/vitest.config.ts`). As 5 funções com lógica não-trivial listadas no item 2.1 do `docs/roadmap.md` foram movidas dos componentes `*Tool.tsx` para `src/lib/{caseConverter,backslashEscape,jwt,unixTime,regexTester}.ts`, cada uma com um `*.test.ts` irmão.
+- **Evidência:** `src/lib/*.ts` + `src/lib/*.test.ts`; `app/package.json`, `app/vitest.config.ts`; item 2.1 do `docs/roadmap.md`.
+- **Racional:** essa lógica (tokenização de case, heurística ms/s, base64url/HS256, guarda contra match zero-width) é onde moram bugs sutis, e o projeto não tinha rede de segurança nenhuma além de lint/manual. A extração para fora do componente foi necessária, não só "ideal": o `eslint-plugin-react-refresh` (regra `only-export-components`) barra exportar função + componente React do mesmo arquivo, então manter os testes sem essa extração quebraria o lint.
+- **Trade-off:** `src/lib/` é uma exceção pontual à regra "lógica inline no componente" da seção 5 do `CLAUDE.md` — só existe para o que precisa de teste de unidade sem montar React; não virou uma camada de domínio geral, e novas ferramentas continuam com lógica inline por padrão.
+- **Consequência:** a extração eliminou duas duplicações que já existiam: `signHS256` (HMAC-SHA256 calculado 2x em `JwtDecoderTool`, na verificação e na geração) e `execAllMatches` (o mesmo loop de `RegExp.exec` existia 2x em `RegExpTesterTool`, uma vez para contar/detalhar matches e outra para o highlight — agora o highlight reaproveita o resultado já calculado).
+- **Ver também:** `docs/testing.md`, `docs/modules.md` (nova seção "Renderer — lógica pura").
+
 ---
 
 ## Divergências entre decisão documentada e código

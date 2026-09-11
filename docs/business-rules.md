@@ -1,6 +1,6 @@
 # Regras de negócio
 
-> "Negócio" aqui = comportamento funcional de cada ferramenta, incluindo heurísticas e limites codificados. Tudo abaixo foi extraído diretamente dos componentes em `app/src/components/`.
+> "Negócio" aqui = comportamento funcional de cada ferramenta, incluindo heurísticas e limites codificados. Tudo abaixo foi extraído diretamente dos componentes em `app/src/components/` (algumas heurísticas — case converter, backslash escape, JWT, Unix time, RegExp — vivem hoje em `app/src/lib/`, ver `docs/modules.md`; comportamento idêntico, só o arquivo mudou, e cada uma tem teste de unidade — ver `docs/testing.md`).
 
 ## Regras transversais
 

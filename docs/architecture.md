@@ -92,6 +92,7 @@ Script mínimo — hoje é só um comentário. Com `contextIsolation: true` + `s
 - **Sem store global** (sem Redux/Zustand/Context de estado). Cada componente gerencia o próprio estado com `useState` / `useEffect` / `useMemo`.
 - Padrão dominante: input controlado → recálculo derivado (em `useEffect` ou `useMemo`) → output read-only.
 - Código compartilhado de comportamento: `app/src/hooks/useClipboardData.ts` — `useClipboardData(onData)` retorna uma função `paste()` que só lê `navigator.clipboard.readText()` quando chamada (botão "Colar da área de transferência" em cada ferramenta); nunca lê sozinho no mount. `app/src/hooks/useCopy.ts` cobre o lado de escrita (feedback "Copiado!").
+- Lógica não-trivial e sem dependência de React (tokenização, parsing, heurísticas) vive em `app/src/lib/` como funções puras, importadas pelo componente-ferramenta correspondente — só para o que precisa de teste de unidade (ver `docs/modules.md` e `docs/testing.md`). O padrão default continua lógica inline no componente.
 - **Sem IPC**: o renderer não se comunica com o processo main em runtime.
 
 ### Estilização
@@ -114,6 +115,7 @@ Script mínimo — hoje é só um comentário. Com `contextIsolation: true` + `s
 | `build` | `tsc -b && vite build` | Type-check + bundle do renderer para `dist/` |
 | `dist` | `npm run build && electron-builder -l` | Build + empacota AppImage em `release/` |
 | `lint` | `eslint .` | Lint |
+| `test` | `vitest run` | Testes de unidade (`app/src/lib/*.test.ts`) — ver `docs/testing.md` |
 | `preview` | `vite preview` | Preview do bundle Vite |
 
 - `main` do `package.json` = `main.cjs`.
@@ -137,6 +139,7 @@ devutils/
     ├── preload.cjs
     ├── index.html
     ├── vite.config.ts
+    ├── vitest.config.ts        # config do Vitest (plugin React, ambiente node)
     ├── tsconfig*.json
     ├── eslint.config.js
     ├── package.json            # inclui o bloco "build" do electron-builder
@@ -151,6 +154,12 @@ devutils/
         ├── hooks/
         │   ├── useClipboardData.ts
         │   └── useCopy.ts
+        ├── lib/                 # funções puras testáveis (sem React), cada uma com *.test.ts ao lado
+        │   ├── caseConverter.ts
+        │   ├── backslashEscape.ts
+        │   ├── jwt.ts
+        │   ├── unixTime.ts
+        │   └── regexTester.ts
         └── components/
             ├── Sidebar.tsx
             ├── CommandPalette.tsx
@@ -165,7 +174,7 @@ devutils/
 - **Electron main/renderer** com renderer web puro (sem framework de integração tipo electron-vite plugin).
 - **SPA client-side** com roteamento por hash.
 - **Component-per-feature**: cada utilitário é um componente React autocontido em `src/components/`, registrado em dois lugares (`App.tsx` rota + `src/tools.ts` item, que alimenta `Sidebar` e `CommandPalette`).
-- **Lógica inline no componente** — sem camada de serviços/domínio; bibliotecas prontas (`crypto-js`, `cronstrue`, `sql-formatter`, `diff`, `qrcode.react`) fazem o trabalho pesado.
+- **Lógica inline no componente** — sem camada de serviços/domínio; bibliotecas prontas (`crypto-js`, `cronstrue`, `sql-formatter`, `diff`, `qrcode.react`) fazem o trabalho pesado. Exceção pontual: as poucas funções puras cobertas por teste de unidade vivem em `src/lib/` (ver item acima e `docs/testing.md`), não uma camada de domínio de verdade.
 - **Derivação de estado** via `useEffect`/`useMemo` a cada mudança de input (formatação "ao vivo", sem botão "processar" na maioria das ferramentas).
 - **Shell de ferramenta compartilhado**: `ToolLayout`/`ToolPanel` (`src/components/`) extraem a estrutura visual repetida (cabeçalho, painel input/output) sem introduzir CSS novo — reusam as classes já existentes em `index.css`.
 - **Code-split por rota**: cada componente-ferramenta é `React.lazy`, então o bundle principal só carrega a tool ativa (ver seção Roteamento).

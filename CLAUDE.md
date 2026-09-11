@@ -19,7 +19,7 @@
 | Ícones | `lucide-react` |
 | Libs de domínio | `crypto-js` (hash/HMAC), `cronstrue` (cron), `sql-formatter` (SQL), `diff` (texto), `qrcode.react` (QR) |
 | Estilo | `app/src/index.css` único: CSS vars (tema dark fixo) + classes utilitárias próprias. **Sem Tailwind.** Fonte Inter via `@fontsource/inter` (empacotada, offline) — importada em `src/main.tsx`. |
-| Testes | Nenhum. Só `npm run lint` + verificação manual (`npm run dev`). |
+| Testes | `vitest` (`npm test`) só para funções puras sem React, extraídas em `app/src/lib/` — cobertura pontual, não geral. Fora isso, `npm run lint` + verificação manual (`npm run dev`). |
 
 ## 3. Arquitetura resumida
 
@@ -56,11 +56,11 @@ Electron main (app/main.cjs)  ──cria──►  BrowserWindow única
   2. Registrar a rota em `app/src/App.tsx` (`<Route path="/x" element={<NomeTool />} />`).
   3. Adicionar item no array `TOOLS[]` de `app/src/tools.ts` (`id`, `name` em PT-BR, `icon` do `lucide-react`, `path`) — fonte única consumida por `Sidebar` e `CommandPalette`.
 - Estilo: usar CSS vars (`var(--text-primary)`, `var(--accent-color)`, `var(--error-color)`, `var(--border-color)`, `var(--app-bg)`…), classes utilitárias existentes (`flex`, `flex-col`, `flex-1`, `glass-panel`, `secondary`) e `style={{}}` inline para ajustes. Sem CSS novo global salvo necessidade real.
-- Lógica **inline no componente** — não criar hooks/abstrações novas sem motivo.
+- Lógica **inline no componente** — não criar hooks/abstrações novas sem motivo. Exceção já estabelecida: funções puras sem React que precisam de teste de unidade vivem em `app/src/lib/` (ver `docs/decisions.md` D22) — não vire regra geral, só para o que já tem `*.test.ts`.
 - Cálculo derivado em `useMemo` (preferir sobre `useEffect` + estado espelho — o `eslint-plugin-react-hooks` v7 barra `setState` dentro de efeito/render); try/catch em volta de parsers, erro em `var(--error-color)` sem apagar o input.
 - `useClipboardData(onData)`: retorna uma função `paste()` para ligar num botão explícito ("Colar da área de transferência") — não ler o clipboard automaticamente no mount de uma ferramenta.
 - Commits: mensagens curtas em PT-BR, prefixo `feat:` / `fix:` / `docs:` (padrão observável no histórico recente).
-- Verificação antes de commitar: `cd app && npm run lint && npm run build` (lint + `tsc -b` + `vite build`, todos verdes) e teste manual com `cd app && npm run dev`.
+- Verificação antes de commitar: `cd app && npm run lint && npm test && npm run build` (lint + Vitest + `tsc -b` + `vite build`, todos verdes) e teste manual com `cd app && npm run dev`. Se `node -v` não mostrar `24.x` (ex.: `mise` resolvendo a versão global), prefixar com `mise exec node@24 --` — Node 26 quebra a extração do binário do Electron no `npm install` (ver `docs/infrastructure.md`, D18).
 - ⚠️ `tsc -b` roda com `noUnusedLocals`/`noUnusedParameters`: nada de imports/vars/params não usados (ex.: `import React` sem uso quebra o build). `catch (e)` sem uso → usar `catch {}`.
 
 ## 6. Documentação
