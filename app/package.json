@@ -3,7 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "description": "Coleção offline de utilitários para desenvolvedores",
-  "author": "thalys",
+  "author": {
+    "name": "Thalys Penha",
+    "email": "thalyspenha@outlook.com.br"
+  },
+  "homepage": "https://github.com/thalyspenha/devutils",
   "type": "module",
   "main": "main.cjs",
   "engines": {
@@ -34,9 +38,18 @@
     ],
     "linux": {
       "target": [
-        "AppImage"
+        "AppImage",
+        "deb"
       ],
-      "category": "Utility"
+      "category": "Development",
+      "synopsis": "Utilitários offline para desenvolvedores",
+      "maintainer": "Thalys Penha <thalyspenha@outlook.com.br>",
+      "desktop": {
+        "entry": {
+          "GenericName": "Utilitários para desenvolvedores",
+          "Keywords": "json;base64;jwt;hash;uuid;regex;sql;cron;devtools;developer;"
+        }
+      }
     }
   },
   "dependencies": {

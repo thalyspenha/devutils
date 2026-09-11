@@ -20,13 +20,16 @@ Definido em `app/package.json`:
   1. `tsc -b` — type-check dos projetos referenciados (`tsconfig.app.json`, `tsconfig.node.json`), `noEmit`.
   2. `vite build` — bundle do renderer para `app/dist/`. `vite.config.ts` define `base: './'` para os assets funcionarem sob `file://` (produção Electron).
 - `npm run dist` = `npm run build && electron-builder -l`
-  3. `electron-builder -l` — empacota para **Linux** (`-l`, target `AppImage`), saída em `app/release/`.
+  3. `electron-builder -l` — empacota para **Linux** (`-l`), nos targets configurados em `build.linux.target` (`AppImage` + `deb`), saída em `app/release/`.
 - Há bloco `build` de configuração do electron-builder em `package.json`:
   - `appId: com.thalys.devutils`, `productName: DevUtils`, `executableName: devutils`
   - `directories.output: release` (o default seria `dist/`, que colidiria com a saída do Vite), `buildResources: build`
   - `files`: `dist/**/*`, `main.cjs`, `preload.cjs`, `!node_modules/**` — o renderer é 100% bundizado pelo Vite, então excluir `node_modules` reduz o asar de ~51 MB para ~1 MB. `main.cjs`/`preload.cjs` só usam APIs nativas do Electron.
-  - `linux`: target `AppImage`, `category: Utility`. Ícone em `app/build/icon.png` (512×512).
+  - `linux`: target `["AppImage", "deb"]`, `category: Development`, `synopsis`, `maintainer` explícito, `desktop.entry` (`GenericName`, `Keywords`) — ver `docs/decisions.md` D23. Ícone em `app/build/icon.png` (512×512).
+  - Top-level `author` (objeto `{name, email}`) e `homepage` — este último obrigatório pro electron-builder gerar `.deb`/`.rpm` (erro `Please specify project homepage` sem ele).
 - Em produção, `main.cjs` carrega `dist/index.html` via `loadFile` (caminho relativo a `app/`). O uso de `HashRouter` no renderer é o que viabiliza o roteamento sob `file://`.
+
+> ⚠️ **`.deb` não builda neste ambiente Arch Linux.** O `fpm` (Ruby) que o `electron-builder` baixa sob demanda pra gerar `.deb` precisa de `libcrypt.so.1`; o Arch não fornece mais essa soname legada por padrão (migrou pra `libxcrypt` sem ela — precisaria do pacote `libxcrypt-compat`, não instalado). O AppImage builda normalmente (não depende do `fpm`). A config do `deb` está correta e deve funcionar em Debian/Ubuntu ou CI baseado nessas distros, onde `libcrypt.so.1` existe nativamente — só não foi validado de ponta a ponta aqui. Ver `docs/decisions.md` D23 e item 2.7 do `docs/roadmap.md`.
 
 > **Resolvido** (antes uma ressalva aqui): `JsonFormatterTool.tsx`, `Base64Tool.tsx` e `JwtDecoderTool.tsx` tinham `import React` não usado que quebrava `tsc -b` (`TS6133`). Removido. `npm run build` passa (exit 0), verificado.
 

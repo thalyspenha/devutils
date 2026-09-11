@@ -73,9 +73,14 @@
 - **Cuidado:** manteve o padrão `.tool-header` + `.tool-body`; sem lib nova, sem CSS global novo (`ToolLayout`/`ToolPanel` reusam as classes `main-content`/`tool-header`/`glass-panel`/`flex-*` já existentes em `index.css`).
 - **Validado:** testado manualmente com `electron .` sob `file://` (produção), navegando por 8 rotas (incluindo as 5 que usam `ToolPanel` e a `RegExpTesterTool`, que perdeu um `paddingBottom: 24px` vestigial no wrapper antigo) — screenshots confirmando visual idêntico ao anterior, sem violação de CSP nem erro no console do renderer.
 
-### 2.7 Ícone e metadados do pacote · P
-- **O quê:** já existe `app/build/icon.png`; falta `.desktop` decente / `synopsis` / `maintainer` no bloco `build`; avaliar targets além de AppImage (`deb`).
-- **Toca em:** `app/package.json` (`build.linux`).
+### 2.7 Ícone e metadados do pacote · P · ✅ feito
+- **O quê:** já existia `app/build/icon.png`; faltava `.desktop` decente / `synopsis` / `maintainer` no bloco `build`; avaliar targets além de AppImage (`deb`).
+- **Entregue:**
+  - `author` virou objeto (`{ name, email }`, antes era a string `"thalys"`) e `homepage` foi adicionado (`https://github.com/thalyspenha/devutils`, derivado do próprio remote git) — o `homepage` é obrigatório pro electron-builder gerar `.deb`/`.rpm` (erro `Please specify project homepage` sem ele).
+  - `build.linux` ganhou `synopsis` ("Utilitários offline para desenvolvedores"), `maintainer` explícito (`"Thalys Penha <thalyspenha@outlook.com.br>"`), `category` trocada de `"Utility"` para `"Development"` (mais correto pro freedesktop menu-spec — é uma suíte de ferramentas de dev, não um utilitário genérico), e `desktop.entry` com `GenericName` e `Keywords` (`json;base64;jwt;hash;uuid;regex;sql;cron;…`) — melhora a busca em app launchers (GNOME Shell, KDE Krunner, etc.).
+  - `build.linux.target` ganhou `"deb"` ao lado de `"AppImage"`.
+- **Toca em:** `app/package.json` (`author`, `homepage`, `build.linux`).
+- **Validado:** `mise exec node@24 -- npm run dist` gerou o AppImage (`release/DevUtils-0.0.0.AppImage`, ~119 MB) com sucesso; `.desktop` extraído de dentro do AppImage confere (`GenericName`, `Keywords`, `Categories=Development;`, `Comment` = description). O target `deb` **não build local neste Arch Linux**: o `fpm` (Ruby) que o electron-builder baixa sob demanda para gerar `.deb` precisa de `libcrypt.so.1`, que o Arch não fornece mais por padrão desde a migração pra `libxcrypt` sem a soname legada (precisa do pacote `libxcrypt-compat`, não instalado — decisão do usuário de não instalar). A config em si está correta e deve funcionar normalmente em Debian/Ubuntu ou CI baseado nessas distros, onde `libcrypt.so.1` existe nativamente.
 
 ---
 

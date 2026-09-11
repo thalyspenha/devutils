@@ -156,6 +156,14 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 - **Consequência:** a extração eliminou duas duplicações que já existiam: `signHS256` (HMAC-SHA256 calculado 2x em `JwtDecoderTool`, na verificação e na geração) e `execAllMatches` (o mesmo loop de `RegExp.exec` existia 2x em `RegExpTesterTool`, uma vez para contar/detalhar matches e outra para o highlight — agora o highlight reaproveita o resultado já calculado).
 - **Ver também:** `docs/testing.md`, `docs/modules.md` (nova seção "Renderer — lógica pura").
 
+## D23 — Metadados de pacote Linux + target `deb`
+
+- **Decisão:** `app/package.json` ganhou `author` como objeto (`{ name: "Thalys Penha", email: "thalyspenha@outlook.com.br" }`, derivado da identidade git do repo — antes era a string `"thalys"`) e `homepage` (`https://github.com/thalyspenha/devutils`, derivado do próprio remote `git@github.com-personal:thalyspenha/devutils.git`). `build.linux` ganhou `synopsis`, `maintainer` explícito, `category` trocada de `"Utility"` para `"Development"`, e `desktop.entry` (`GenericName`, `Keywords`) para o `.desktop` gerado. `build.linux.target` ganhou `"deb"` ao lado de `"AppImage"`.
+- **Evidência:** `app/package.json` (`author`, `homepage`, `build.linux`); item 2.7 do `docs/roadmap.md`.
+- **Racional:** `.desktop` gerado automaticamente pelo electron-builder já era válido, mas mínimo (só `Name`/`Exec`/`Icon`/`Categories=Utility;`/`Comment`) — sem `GenericName`/`Keywords`, fica pior em buscas de app launcher (GNOME Shell, KDE Krunner). `category: Development` é mais correto pro freedesktop menu-spec (é uma suíte de ferramentas de dev, não um utilitário genérico). `homepage` é exigido pelo electron-builder pra gerar `.deb`/`.rpm` (erro `Please specify project homepage` sem ele) — só existia HomePage no README genérico do template Vite, que não descreve o projeto.
+- **Consequência / verificado:** `mise exec node@24 -- npm run dist` gerou `release/DevUtils-0.0.0.AppImage` (~119 MB) com sucesso; `.desktop` extraído de dentro do AppImage confirma todos os campos novos (`GenericName=Utilitários para desenvolvedores`, `Keywords=json;base64;jwt;…`, `Categories=Development;`). O target `deb` **falhou neste ambiente** (Arch Linux): o `fpm` (Ruby) baixado sob demanda pelo electron-builder precisa de `libcrypt.so.1`, ausente por padrão no Arch (migrou pra `libxcrypt` sem essa soname legada; precisaria do pacote `libxcrypt-compat`). Perguntado ao usuário se deveria instalar via `sudo pacman` pra validar de ponta a ponta — resposta: não, deixar configurado sem build local. A config em si é válida e deve funcionar normalmente em Debian/Ubuntu ou CI baseado nessas distros.
+- **Ver também:** `docs/infrastructure.md` (ressalva do `.deb` no Arch).
+
 ---
 
 ## Divergências entre decisão documentada e código

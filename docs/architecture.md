@@ -113,14 +113,14 @@ Script mínimo — hoje é só um comentário. Com `contextIsolation: true` + `s
 | `dev` | `concurrently -k "vite" "npm run electron:dev"` | Sobe Vite + Electron juntos |
 | `electron:dev` | `wait-on tcp:1234 && cross-env NODE_ENV=development electron .` | Espera o dev server e abre o Electron |
 | `build` | `tsc -b && vite build` | Type-check + bundle do renderer para `dist/` |
-| `dist` | `npm run build && electron-builder -l` | Build + empacota AppImage em `release/` |
+| `dist` | `npm run build && electron-builder -l` | Build + empacota AppImage + deb em `release/` |
 | `lint` | `eslint .` | Lint |
 | `test` | `vitest run` | Testes de unidade (`app/src/lib/*.test.ts`) — ver `docs/testing.md` |
 | `preview` | `vite preview` | Preview do bundle Vite |
 
 - `main` do `package.json` = `main.cjs`.
 - `vite.config.ts`: `base: './'` (assets sob `file://`) e `server.port: 1234` (casa com o fluxo dev).
-- `electron-builder -l` empacota para **Linux** (target `AppImage`). Config no bloco `build` do `package.json` (`appId`, `productName`, `directories.output: release`, `files` sem `node_modules`, ícone `app/build/icon.png`). Ver `docs/infrastructure.md`.
+- `electron-builder -l` empacota para **Linux** (targets `AppImage` + `deb`). Config no bloco `build` do `package.json` (`appId`, `productName`, `directories.output: release`, `files` sem `node_modules`, ícone `app/build/icon.png`, `synopsis`/`maintainer`/`desktop.entry` do `.deb`/`.desktop`). Ver `docs/infrastructure.md` e `docs/decisions.md` D23.
 
 ## Estrutura de diretórios
 
