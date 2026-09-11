@@ -1,6 +1,6 @@
 # Módulos
 
-> O projeto não tem "módulos" no sentido de backend/pacotes. Esta página lista as **unidades de código** existentes: processo Electron, bootstrap do renderer, navegação, command palette, error boundary, shell de ferramenta compartilhado (`ToolLayout`/`ToolPanel`), hooks compartilhados, funções puras testáveis (`src/lib/`) e os 16 componentes-ferramenta.
+> O projeto não tem "módulos" no sentido de backend/pacotes. Esta página lista as **unidades de código** existentes: processo Electron, bootstrap do renderer, navegação, command palette, error boundary, shell de ferramenta compartilhado (`ToolLayout`/`ToolPanel`), hooks compartilhados, funções puras testáveis (`src/lib/`) e os 17 componentes-ferramenta.
 
 ## Processo Electron
 
@@ -14,12 +14,12 @@
 | Arquivo | Responsabilidade |
 |---|---|
 | `app/src/main.tsx` | Monta `<App/>` em `#root` via `createRoot`, dentro de `<StrictMode>`. |
-| `app/src/App.tsx` | Define `<HashRouter>`, renderiza `<Sidebar/>`, `<CommandPalette/>` e `<ToolRoutes/>`. `ToolRoutes` envolve as 16 `<Route>` num `<ErrorBoundary resetKey={location.pathname}>` + `<Suspense fallback={<RouteFallback/>}>`. Cada componente-ferramenta é `React.lazy(() => import(...))` — code-split por rota, chunk carregado sob demanda. |
+| `app/src/App.tsx` | Define `<HashRouter>`, renderiza `<Sidebar/>`, `<CommandPalette/>` e `<ToolRoutes/>`. `ToolRoutes` envolve as 17 `<Route>` num `<ErrorBoundary resetKey={location.pathname}>` + `<Suspense fallback={<RouteFallback/>}>`. Cada componente-ferramenta é `React.lazy(() => import(...))` — code-split por rota, chunk carregado sob demanda. |
 | `app/src/tools.ts` | Fonte única da lista de ferramentas: array `TOOLS` (`id`, `name`, `icon` do `lucide-react`, `path`), ordenado alfabeticamente por `name` + interface `Tool`. Consumido por `Sidebar` e `CommandPalette`. |
 | `app/src/components/Sidebar.tsx` | Navegação lateral. Itera `TOOLS` (de `src/tools.ts`) com `<NavLink>`. Cabeçalho fixo "DevUtils" (igual ao `<title>` e ao `productName` do electron-builder). |
 | `app/src/components/CommandPalette.tsx` | Overlay de busca de ferramentas (atalho `Ctrl`/`Cmd`+`K`, listener global em `window`). Match fuzzy inline sobre `tool.name` (bônus para caracteres consecutivos / início de palavra), lista derivada em `useMemo`. Navegação por teclado (`↑`/`↓`/`Enter`/`Esc`), fecha ao clicar fora. `useNavigate` para ir à rota. |
 | `app/src/components/ErrorBoundary.tsx` | Class component. Captura erros de render de qualquer ferramenta (`getDerivedStateFromError`) — inclusive falha ao carregar o chunk `lazy` de uma tool — e mostra uma tela de recuperação (`.error-boundary`) com a mensagem + botão "Tentar de novo", em vez de tela branca. Reseta sozinho quando `resetKey` muda (troca de rota). |
-| `app/src/components/ToolLayout.tsx` | Shell padrão de uma ferramenta: `<div className="main-content">` + `.tool-header` (título/descrição). `children` fica livre para ter 1+ `.tool-body` — necessário pro `JwtDecoderTool`, que tem uma barra de abas entre o header e dois `.tool-body` condicionais. Usado pelas 16 tools. |
+| `app/src/components/ToolLayout.tsx` | Shell padrão de uma ferramenta: `<div className="main-content">` + `.tool-header` (título/descrição). `children` fica livre para ter 1+ `.tool-body` — necessário pro `JwtDecoderTool`, que tem uma barra de abas entre o header e dois `.tool-body` condicionais. Usado pelas 17 tools. |
 | `app/src/components/ToolPanel.tsx` | Painel `.glass-panel` com um label (e, opcionalmente, botões de ação alinhados à direita). Reúne o que seriam `<PanelInput>`/`<PanelOutput>` num componente só — a diferença entre os dois é só o `readOnly` da textarea e o conjunto de botões, resolvidos via `children`/`actions`. Usado em `JsonFormatterTool`, `Base64Tool`, `BackslashEscapeTool`, `SqlFormatterTool` e `JwtDecoderTool` (painéis "Encoded JWT"/"Header"/"Payload"). |
 | `app/src/index.css` | Único stylesheet global. Variáveis de tema (dark fixo), classes utilitárias, componentes de layout (`.sidebar`, `.tool-header`, `.tool-body`, `.glass-panel`, `.command-palette`, `.error-boundary`). |
 
@@ -67,6 +67,7 @@ Todos em `app/src/components/`. Colunas: rota, bibliotecas externas além de Rea
 | `BackslashEscapeTool` | `/backslash` | — | Escapa/desescapa sequências (`\\`, `\n`, `\r`, `\t`, `\0`, `\"`, `\'`, `\b`, `\f`, `\v`) via mapas + regex. Swap input↔output. Legenda de sequências suportadas. | `input`, `mode` (+ `output` via `useMemo`) |
 | `SqlFormatterTool` | `/sql` | `sql-formatter` (`format`) | Formata SQL ao vivo. Dropdown de dialeto (`sql`/`mysql`/`postgresql`/`mariadb` → opção `language`). `tabWidth: 2`, `keywordCase: 'upper'` fixos. Em erro, exibe **só a primeira linha** da mensagem. | `input`, `dialect` (+ `output`/`error` via `useMemo`) |
 | `ChmodCalculatorTool` | `/chmod` | — | Calculadora de permissões Unix. Estado canônico é o octal (3 dígitos); checkboxes rwx (dono/grupo/outros) e campo octal editam o mesmo estado via bitwise (`^` toggle no checkbox, filtro `[0-7]` no campo texto). Simbólico (`rwxr-xr-x`) e comando (`chmod NNN arquivo`) são derivados, read-only, com botão copiar. | `octal` |
+| `UrlParserTool` | `/url` | — (`URL`, `URLSearchParams` nativos) | Analisa uma URL colada: painel de componentes (protocolo, usuário/senha, host, hostname, porta, caminho, query string, fragmento, origin) + tabela de parâmetros de query já decodificados via `URLSearchParams.entries()` (preserva chaves duplicadas, ao contrário de um objeto). Erro de URL inválida exibido inline sem apagar o input. Botão "Copiar como JSON" nos parâmetros. | `input` (+ `parsed`/`error` via `useMemo`) |
 
 ### Observações por componente
 

@@ -9,7 +9,7 @@
 - **Formatação "ao vivo".** A maioria das ferramentas recalcula o output a cada tecla (derivado com `useMemo`), sem botão "processar". Exceções com ação explícita: `UuidGenerator` ("Gerar"), `PasswordGenerator` ("Gerar Outra Senha"), `RsaGenerator` ("Gerar Chaves"), `JwtDecoder` aba Gerar ("Gerar JWT"), `UnixTime` timestamp→data ("Convert").
 - **Erros não destroem o input.** Entrada inválida mostra mensagem de erro e zera o output, mas mantém o que o usuário digitou.
 - **Tema dark fixo.** Não há troca de tema.
-- **Textos de UI majoritariamente PT-BR.** Descrições, labels, botões, placeholders e mensagens de erro/estado são PT-BR nas 16 tools; só os **títulos** (`<h2>`) continuam em inglês, para bater com o nome em `TOOLS[]`/Sidebar (ex.: "JSON Formatter", "RegExp Tester") — ver `docs/decisions.md`.
+- **Textos de UI majoritariamente PT-BR.** Descrições, labels, botões, placeholders e mensagens de erro/estado são PT-BR nas 17 tools; só os **títulos** (`<h2>`) continuam em inglês, para bater com o nome em `TOOLS[]`/Sidebar (ex.: "JSON Formatter", "RegExp Tester") — ver `docs/decisions.md`.
 
 ## JSON Formatter (`/`)
 
@@ -140,6 +140,14 @@
 - Cada dígito octal é um bitmask: leitura=4, escrita=2, execução=1. Clicar um checkbox faz XOR do bit correspondente no dígito da categoria.
 - Campo octal: filtra tudo que não for `0`–`7` e trunca em 3 caracteres (`value.replace(/[^0-7]/g, '').slice(0, 3)`); dígitos ausentes (enquanto o usuário ainda está digitando) contam como `0` só para o cálculo de checkboxes/simbólico/comando — o campo em si mostra exatamente o que foi digitado, sem padding.
 - Valor padrão: `644` (leitura/escrita pro dono, só leitura pra grupo/outros — permissão comum de arquivo novo).
+
+## URL Parser (`/url`)
+
+- Parsing via `new URL(input.trim())` nativo — exige URL absoluta com protocolo (`https://...`); sem protocolo, lança e mostra "URL inválida — inclua o protocolo".
+- Input vazio → sem erro, sem resultado (estado inicial neutro, não "URL inválida").
+- Parâmetros de query: `Array.from(url.searchParams.entries())` — decodifica automaticamente (URL-encoding) e **preserva chaves duplicadas** (`?a=1&a=2` vira duas linhas na tabela, não um objeto que colapsaria pra uma).
+- Componentes exibidos como estão na `URL` nativa (`pathname`/`hash` não recebem decode extra além do que o `URL` já normaliza) — só os parâmetros de query passam por decode explícito via `URLSearchParams`.
+- Campos vazios (porta default, sem usuário/senha, etc.) mostram "—" em vez de célula em branco.
 
 ## O que não foi identificado
 

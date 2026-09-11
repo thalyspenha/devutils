@@ -28,6 +28,7 @@ Definidas em `app/src/App.tsx` com `<HashRouter>` (URLs reais têm o prefixo `#`
 | `/backslash` | `BackslashEscapeTool` | Escape/unescape de sequências backslash |
 | `/sql` | `SqlFormatterTool` | Formatador de SQL |
 | `/chmod` | `ChmodCalculatorTool` | Calculadora de permissões Unix (rwx ↔ octal) |
+| `/url` | `UrlParserTool` | Parser de URL — componentes + parâmetros de query decodificados |
 
 - Sem rota curinga / página 404.
 - Sem parâmetros de rota, query strings ou route guards.

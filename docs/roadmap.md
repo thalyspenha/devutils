@@ -92,7 +92,7 @@ Cada uma segue o padrão de 3 pontos do `CLAUDE.md` (componente + rota + item no
 |---|---|---|---|
 | Conversor JSON ↔ YAML ↔ TOML | `/convert` | `yaml`, `smol-toml` | Bidirecional; erro na 1ª linha (padrão D12) |
 | Cores: hex/rgb/hsl + contraste WCAG | `/color` | — (cálculo puro) | Mostra ratio AA/AAA |
-| URL parser / query string | `/url` | — (`URL`, `URLSearchParams`) | Decodifica cada parâmetro |
+| ~~URL parser / query string~~ | ~~`/url`~~ | — (`URL`, `URLSearchParams`) | ✅ **feito** — ver abaixo |
 | Conversor de base numérica + bitwise | `/base` | — | bin/oct/dec/hex, operações AND/OR/XOR/shift |
 | JSONPath / mini-jq playground | `/jsonpath` | `jsonpath-plus` | Sobre um JSON colado |
 | Decoder de PEM / certificado X.509 | `/cert` | `@peculiar/x509` | Validade, SAN, issuer — complementa RSA/JWT |
@@ -103,6 +103,11 @@ Cada uma segue o padrão de 3 pontos do `CLAUDE.md` (componente + rota + item no
 | ~~Calculadora de chmod / permissões Unix~~ | ~~`/chmod`~~ | — | ✅ **feito** — ver abaixo |
 | Lorem ipsum / dados fake | `/lorem` | `@faker-js/faker` (grande — avaliar) | |
 | ULID / nanoid (junto do UUID) | — | `ulid`, `nanoid` | Estender `UuidGeneratorTool` |
+
+### URL Parser (`/url`) · ✅ feito
+- **O quê:** nova ferramenta `UrlParserTool` — cola uma URL, mostra a quebra de todos os componentes (protocolo, usuário/senha, host, hostname, porta, caminho, query string, fragmento, origin) e uma tabela com cada parâmetro de query já decodificado (via `URLSearchParams`, sem colapsar chaves duplicadas).
+- **Entregue:** `src/components/UrlParserTool.tsx` (3 pontos do padrão do `CLAUDE.md`: componente + rota `/url` em `App.tsx` + item `url` em `TOOLS[]`, ícone `Link2`). Parsing via `new URL(input)` nativo (sem lib nova); erro de URL inválida (falta protocolo, etc.) mostrado inline sem apagar o input. Parâmetros de query listados como `Array.from(url.searchParams.entries())` — preserva duplicatas (ex.: `?foo=1&foo=2`), ao contrário de um objeto simples. Botão "Copiar como JSON" nos parâmetros.
+- **Pronto quando:** rota nova + item no menu, sem lib nova, sem CSS novo. ✅ `npm run lint`, `npm test` (29 testes, inalterados) e `npm run build` passam. Verificado visualmente via `electron .` (produção) com URL de exemplo contendo chave de query duplicada — componentes e parâmetros batem, duplicata preservada, sem violação de CSP.
 
 ### Calculadora de chmod / permissões Unix (`/chmod`) · ✅ feito
 - **O quê:** nova ferramenta `ChmodCalculatorTool` — checkboxes rwx (dono/grupo/outros) ↔ número octal, ambos editáveis e sincronizados; simbólico (`rwxr-xr-x`) e comando `chmod NNN arquivo` derivados, read-only, com botão copiar cada um.

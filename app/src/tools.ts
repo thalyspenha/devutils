@@ -15,6 +15,7 @@ import {
   Slash,
   Database,
   FileLock2,
+  Link2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -43,5 +44,6 @@ export const TOOLS: Tool[] = [
   { id: 'rsa', name: 'RSA Generator', icon: Shield, path: '/rsa' },
   { id: 'diff', name: 'Text Diff', icon: FileDiff, path: '/diff' },
   { id: 'unix-time', name: 'Unix Time', icon: Clock, path: '/unix-time' },
+  { id: 'url', name: 'URL Parser', icon: Link2, path: '/url' },
   { id: 'uuid', name: 'UUID Generator', icon: Fingerprint, path: '/uuid' },
 ];
