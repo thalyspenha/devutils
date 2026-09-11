@@ -60,4 +60,4 @@ Definidas em `app/src/App.tsx` com `<HashRouter>` (URLs reais têm o prefixo `#`
 
 ## Autenticação de API
 
-**Não aplicável** (não há API). Ver `docs/business-rules.md` para o único uso de segredo (secret do HS256 no gerador de JWT, que nunca sai da máquina).
+**Não aplicável** (não há API). Ver `docs/business-rules.md` para os usos de segredo do JWT Tool (secret do HS256 tanto para gerar quanto para verificar a assinatura na aba Decodificar), que nunca saem da máquina.

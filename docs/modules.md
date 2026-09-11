@@ -40,7 +40,7 @@ Todos em `app/src/components/`. Colunas: rota, bibliotecas externas além de Rea
 |---|---|---|---|---|
 | `JsonFormatterTool` | `/` | — | Valida e identa JSON (`JSON.parse` + `JSON.stringify(…, 2)`). Fallback: tenta corrigir backslashes não escapados antes de falhar. | `input` (+ `output`/`error` via `useMemo`) |
 | `Base64Tool` | `/base64` | — | Encode/decode Base64 (`btoa`/`atob` com `escape`/`unescape` para UTF-8). Botão de swap troca input↔output e inverte o modo. | `input`, `mode` (+ `output`/`error` via `useMemo`) |
-| `JwtDecoderTool` | `/jwt` | `crypto-js` | Abas **Decodificar** (split por `.`, base64url-decode de header/payload) e **Gerar** (assina HS256 com `CryptoJS.HmacSHA256`). Não verifica assinatura na aba decode. | decode: `input` (+ `header`/`payload`/`error` via `useMemo`); generate: `payloadText`,`secret`,`generatedToken`,`genError`; `activeTab` |
+| `JwtDecoderTool` | `/jwt` | `crypto-js` | Abas **Decodificar** (split por `.`, base64url-decode de header/payload; secret opcional verifica assinatura HS256) e **Gerar** (assina HS256 com `CryptoJS.HmacSHA256`). | decode: `input`, `verifySecret` (+ `header`/`payload`/`headerAlg`/`error` e `signatureStatus` via `useMemo`); generate: `payloadText`,`secret`,`generatedToken`,`genError`; `activeTab` |
 | `UnixTimeConverterTool` | `/unix-time` | — | Relógio Unix ao vivo (`setInterval` 1s). Timestamp→data (heurística: `>1e12` = ms, senão s; local + UTC). Data→timestamp (`datetime-local`, reativo; init em hora local). | `currentUnix`, `unixInput`, `dateOutput`, `unixError`, `dateInput` (+ `unixOutput` via `useMemo`) |
 | `RegExpTesterTool` | `/regexp` | — | Testa regex ao vivo (`new RegExp(pattern, flags)`). Destaca matches no texto, lista matches + capture groups (limite de exibição: 50). Guarda contra loop de match zero-width. | `pattern`, `flags`, `testString` (+ `matchResult`/`error` via `useMemo`) |
 | `CronParserTool` | `/cron` | `cronstrue/i18n` | Traduz expressão cron para texto em `pt_BR`. Cálculo síncrono no render (sem `useState` de output). Lista de exemplos estática. | `expression` |
@@ -49,17 +49,17 @@ Todos em `app/src/components/`. Colunas: rota, bibliotecas externas além de Rea
 | `PasswordGeneratorTool` | `/password` | — | Gera senha com `window.crypto.getRandomValues` (`Uint32Array`, módulo sobre o charset). Opções: tamanho (4–64), maiúsc./minúsc./números/símbolos. Regenera a cada mudança de opção. | `password`, `length`, 4× flags de charset |
 | `RsaGeneratorTool` | `/rsa` | — (WebCrypto) | Gera par RSA via `window.crypto.subtle.generateKey({name:'RSA-OAEP', hash:'SHA-256'}, …, ['encrypt','decrypt'])`. Exporta SPKI/PKCS8 → PEM manual (base64 + wrap 64). Tamanhos: 2048/4096. Erro exibido inline (não mais `alert()`). | `keySize`, `publicKey`, `privateKey`, `isGenerating`, `error` |
 | `TextDiffTool` | `/diff` | `diff` (`Diff.diffLines`) | Compara dois textos linha a linha; renderiza `+`/`-`/contexto com cores. | `original`, `modified` (+ `diffResult` via `useMemo`) |
-| `CaseConverterTool` | `/case` | — | Converte o texto entre camelCase, PascalCase, snake_case, kebab-case, CONSTANT_CASE, UPPERCASE, lowercase. **Sobrescreve o próprio input** com o resultado (in-place). Tokenização por regex (`a-z`→`A-Z`, espaços, `_`, `-`). | `input` |
+| `CaseConverterTool` | `/case` | — | Converte o texto entre camelCase, PascalCase, snake_case, kebab-case, CONSTANT_CASE, UPPERCASE, lowercase. Campo de **Resultado separado e read-only** — o input nunca é sobrescrito. Tokenização por regex (`a-z`→`A-Z`, espaços, `_`, `-`), em funções puras fora do componente. | `input`, `activeCase` (+ `output` via `useMemo`) |
 | `BackslashEscapeTool` | `/backslash` | — | Escapa/desescapa sequências (`\\`, `\n`, `\r`, `\t`, `\0`, `\"`, `\'`, `\b`, `\f`, `\v`) via mapas + regex. Swap input↔output. Legenda de sequências suportadas. | `input`, `mode` (+ `output` via `useMemo`) |
 | `SqlFormatterTool` | `/sql` | `sql-formatter` (`format`) | Formata SQL ao vivo. Dropdown de dialeto (`sql`/`mysql`/`postgresql`/`mariadb` → opção `language`). `tabWidth: 2`, `keywordCase: 'upper'` fixos. Em erro, exibe **só a primeira linha** da mensagem. | `input`, `dialect` (+ `output`/`error` via `useMemo`) |
 
 ### Observações por componente
 
 - **`JwtDecoderTool`** — o export continua `JwtDecoderTool` (o spec `docs/superpowers/specs/2026-06-09-jwt-generator-design.md` previa renomear para `JwtTool`; não foi feito). O título exibido e o item do menu são "JWT Tool".
-- **`CaseConverterTool`** — não tem campo de saída separado; cada botão transforma `input` no lugar. Converter duas vezes pode perder informação (ex.: `UPPERCASE` depois `camelCase`).
+- **`CaseConverterTool`** — cada botão só seleciona o formato (`activeCase`); o resultado vai para um campo de saída read-only separado, derivado com `useMemo`. O input do usuário nunca é sobrescrito, então já não há mais perda de informação ao trocar de formato.
 - **`RsaGeneratorTool`** — as chaves têm uso `encrypt`/`decrypt` (RSA-OAEP), não servem para assinatura; a descrição na UI já deixa isso explícito. Opção de 1024 bits removida (insegura); erro de geração agora é uma mensagem inline, não `alert()`.
 - **`UnixTimeConverterTool`** — "Date to Timestamp" interpreta o valor de `datetime-local` como horário **local** (`new Date(dateInput)`).
-- **`QrCodeGeneratorTool`** — usa a prop `includeMargin` do `qrcode.react`; em `qrcode.react` v4 essa prop foi substituída por `marginSize` (a antiga pode ser ignorada). Ver `docs/dependencies.md`.
+- **`QrCodeGeneratorTool`** — usa `marginSize={0}` (prop atual do `qrcode.react` v4; `includeMargin` está deprecated). Exporta em **SVG** (`QRCodeSVG` + serialização manual) e **PNG** (`QRCodeCanvas` oculto, só para gerar o PNG via `canvas.toDataURL`, com os mesmos props do SVG visível).
 
 ## Recursos estáticos
 

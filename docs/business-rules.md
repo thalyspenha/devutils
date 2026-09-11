@@ -32,7 +32,7 @@
 
 - Exige exatamente **3 partes** separadas por `.`; caso contrário: "Invalid JWT format".
 - Decodifica header e payload como **base64url** (`-`→`+`, `_`→`/`, padding `=` reposto) e formata como JSON identado.
-- **Não verifica a assinatura** nem valida `exp`/`nbf`. Mostrar "Valid JVT" significa apenas "decodificou".
+- **Verificação de assinatura é opcional**, via campo "Secret" (em branco por padrão): sem secret, o status mostra "Decodificado — assinatura não verificada"; com secret e `alg: HS256` no header, recalcula `HmacSHA256(header.payload, secret)` e compara com a 3ª parte — mostra "Assinatura válida" ou "Assinatura inválida"; para outros algoritmos (`RS256` etc.), mostra "Verificação só suportada para HS256". Não valida `exp`/`nbf` em nenhum caso.
 - Botão "Colar" cola o conteúdo do clipboard sem filtro (a validação de 3 partes acontece depois, na decodificação).
 
 ### Aba Gerar
@@ -67,11 +67,11 @@
 
 ## QR Code Generator (`/qrcode`)
 
-- Renderiza `QRCodeSVG` com **nível de correção de erro `L`** (baixo), `includeMargin={false}`.
+- Renderiza `QRCodeSVG` com **nível de correção de erro `L`** (baixo), `marginSize={0}` (prop atual do `qrcode.react` v4).
 - Texto default: `https://example.com`. Se o texto ficar vazio, usa `' '` (espaço) para não quebrar.
 - Tamanho: **128–512 px**, step 16 (default 256).
 - Cores de código e de fundo configuráveis.
-- Download: serializa o `<svg>` e baixa como `qrcode.svg`.
+- Download em dois formatos: **SVG** (serializa o `<svg>` visível, baixa como `qrcode.svg`) e **PNG** (`QRCodeCanvas` oculto, renderizado com os mesmos props, exportado via `canvas.toDataURL('image/png')` como `qrcode.png`).
 
 ## UUID Generator (`/uuid`)
 
@@ -116,8 +116,8 @@
 
 - Tokenização: insere espaço entre `minúscula→Maiúscula`, divide por espaço/`_`/`-`, descarta vazios, minúscula tudo.
 - Alvos: `camelCase`, `PascalCase`, `snake_case`, `kebab-case`, `CONSTANT_CASE`, `UPPERCASE`, `lowercase`.
-- **O resultado substitui o próprio input** (transformação in-place; não há campo de saída separado).
-- Input só de espaços em branco → retorna o input inalterado.
+- Campo de **Resultado separado e read-only** — clicar num formato só atualiza `activeCase`; o input digitado nunca é sobrescrito, então trocar de formato repetidamente não perde informação.
+- Input só de espaços em branco (ou nenhum formato escolhido ainda) → resultado vazio.
 
 ## Backslash Escape / Unescape (`/backslash`)
 

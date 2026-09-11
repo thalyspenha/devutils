@@ -27,6 +27,7 @@ export function JwtDecoderTool() {
 
   // decode state
   const [input, setInput] = useState('');
+  const [verifySecret, setVerifySecret] = useState('');
 
   // generate state
   const [payloadText, setPayloadText] = useState(DEFAULT_PAYLOAD);
@@ -36,27 +37,44 @@ export function JwtDecoderTool() {
   const { copy, copied } = useCopy();
   const pasteFromClipboard = useClipboardData(setInput);
 
-  const { header, payload, error } = useMemo<{ header: string; payload: string; error: string | null }>(() => {
-    if (!input.trim()) return { header: '', payload: '', error: null };
+  const { header, payload, headerAlg, error } = useMemo<{ header: string; payload: string; headerAlg: string | null; error: string | null }>(() => {
+    if (!input.trim()) return { header: '', payload: '', headerAlg: null, error: null };
 
     const parts = input.split('.');
     if (parts.length !== 3) {
-      return { header: '', payload: '', error: 'Invalid JWT format. Must contain 3 parts separated by dots.' };
+      return { header: '', payload: '', headerAlg: null, error: 'Invalid JWT format. Must contain 3 parts separated by dots.' };
     }
     try {
+      const parsedHeader = JSON.parse(decodeBase64Url(parts[0]));
       return {
-        header: JSON.stringify(JSON.parse(decodeBase64Url(parts[0])), null, 2),
+        header: JSON.stringify(parsedHeader, null, 2),
         payload: JSON.stringify(JSON.parse(decodeBase64Url(parts[1])), null, 2),
+        headerAlg: typeof parsedHeader.alg === 'string' ? parsedHeader.alg : null,
         error: null,
       };
     } catch (err) {
       return {
         header: '',
         payload: '',
+        headerAlg: null,
         error: 'Failed to decode JWT parts. ' + (err instanceof Error ? err.message : String(err)),
       };
     }
   }, [input]);
+
+  // Verificação de assinatura é opcional e só roda se o usuário informar um secret.
+  const signatureStatus = useMemo<'none' | 'unsupported-alg' | 'valid' | 'invalid'>(() => {
+    if (error || !input.trim() || !verifySecret) return 'none';
+    if (headerAlg !== 'HS256') return 'unsupported-alg';
+
+    const [headerB64, payloadB64, signatureB64] = input.split('.');
+    const expectedSignature = CryptoJS.HmacSHA256(`${headerB64}.${payloadB64}`, verifySecret)
+      .toString(CryptoJS.enc.Base64)
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+    return expectedSignature === signatureB64 ? 'valid' : 'invalid';
+  }, [input, verifySecret, headerAlg, error]);
 
   const generateJwt = () => {
     try {
@@ -123,16 +141,39 @@ export function JwtDecoderTool() {
             />
           </div>
 
+          <div className="flex-col" style={{ gap: '6px', padding: '0 4px' }}>
+            <label style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Secret (opcional — verifica assinatura HS256)</label>
+            <input
+              type="text"
+              value={verifySecret}
+              onChange={(e) => setVerifySecret(e.target.value)}
+              placeholder="Deixe em branco para só decodificar, sem verificar"
+              style={{ maxWidth: '400px' }}
+            />
+          </div>
+
           <div className="flex items-center gap-2" style={{ padding: '0 4px', fontSize: '14px' }}>
             {error ? (
               <span style={{ color: 'var(--error-color)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <AlertCircle size={18} />{error}
               </span>
-            ) : input ? (
+            ) : !input ? null : signatureStatus === 'valid' ? (
               <span style={{ color: 'var(--success-color)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <CheckCircle2 size={18} />Valid JWT
+                <CheckCircle2 size={18} />Assinatura válida (HS256)
               </span>
-            ) : null}
+            ) : signatureStatus === 'invalid' ? (
+              <span style={{ color: 'var(--error-color)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <AlertCircle size={18} />Assinatura inválida — não confia neste token com esse secret
+              </span>
+            ) : signatureStatus === 'unsupported-alg' ? (
+              <span style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <AlertCircle size={18} />Verificação só suportada para HS256 (token usa {headerAlg ?? 'algoritmo desconhecido'})
+              </span>
+            ) : (
+              <span style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CheckCircle2 size={18} />Decodificado — assinatura não verificada
+              </span>
+            )}
           </div>
 
           <div className="flex-1 flex gap-4">

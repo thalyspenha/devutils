@@ -115,11 +115,11 @@ Cada uma segue o padrão de 3 pontos do `CLAUDE.md` (componente + rota + item no
 Levantadas na revisão; não bloqueiam nada mas valem um PR de "faxina":
 
 - ~~**RSA (`/rsa`):** ainda oferece **1024 bits**...~~ **Corrigido** — opção de 1024 bits removida (só 2048/4096); descrição no `tool-header` agora explica que as chaves são `RSA-OAEP` (criptografar/descriptografar), não servem para assinatura; erro de geração virou mensagem inline (`var(--error-color)`) em vez de `alert()`.
-- **JWT decode:** mostra "Valid JWT" só checando que há 3 partes — **não verifica assinatura**. Renomear o rótulo para "Decodificado" ou adicionar verificação opcional com secret.
-- **CaseConverter (`/case`):** sobrescreve o próprio input (destrutivo, sem campo de saída separado). Converter duas vezes perde informação.
+- ~~**JWT decode:** mostra "Valid JWT" só checando que há 3 partes...~~ **Corrigido** — campo "Secret" opcional na aba Decodificar; sem secret mostra "Decodificado — assinatura não verificada", com secret + `alg: HS256` verifica de fato (`HmacSHA256` recalculado e comparado com a 3ª parte), outros algoritmos mostram "Verificação só suportada para HS256". `exp`/`nbf` continuam não validados.
+- ~~**CaseConverter (`/case`):** sobrescreve o próprio input...~~ **Corrigido** — funções de conversão viraram puras (fora do componente); botões só selecionam `activeCase`, resultado vai para um campo de saída read-only separado (`useMemo`). Input nunca é sobrescrito.
 - ~~**UuidGenerator (`/uuid`):** `count` não tem clamp real...~~ **Corrigido** — `onChange` agora faz `Math.min(Math.max(raw, 1), 1000)`; o `max="1000"` do HTML sozinho não impedia digitar valores maiores.
 - ~~**`react-router-dom`:** `npm audit` aponta 2 CVEs high...~~ **Corrigido** — atualizado `^7.13.1` → `^7.18.3` (instalado `7.18.3`); zero avisos de `react-router`/`react-router-dom` no `npm audit`.
-- **QrCode (`/qrcode`):** prop `includeMargin` foi trocada por `marginSize` no `qrcode.react` v4 (a antiga é ignorada); export só em SVG — adicionar PNG seria útil.
+- ~~**QrCode (`/qrcode`):** prop `includeMargin`...~~ **Corrigido** — trocada por `marginSize={0}`; adicionado botão "Baixar PNG" (via `QRCodeCanvas` oculto + `canvas.toDataURL`), ao lado do "Baixar SVG" já existente.
 - ~~**`<title>Devtools</title>`** no `index.html`~~ **Corrigido** — `<title>` agora é `DevUtils`, consistente com `productName` do electron-builder. A Sidebar ainda mostra "DevUtils Linux" — unificar esse rótulo continua no item 1.5.
 - ~~**`useClipboardData`:** lê o clipboard automaticamente em toda montagem de tool...~~ **Corrigido** — hook reescrito para expor um `paste()` sob demanda; cada tool ganhou um botão "Colar da área de transferência" (ícone `ClipboardPaste`) e o clipboard não é mais lido sozinho no mount.
 
