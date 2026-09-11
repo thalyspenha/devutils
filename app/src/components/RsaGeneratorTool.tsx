@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AlertCircle } from 'lucide-react';
 import { useCopy } from '../hooks/useCopy';
 
 export function RsaGeneratorTool() {
@@ -6,6 +7,7 @@ export function RsaGeneratorTool() {
   const [publicKey, setPublicKey] = useState('');
   const [privateKey, setPrivateKey] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { copy, copiedKey } = useCopy();
 
   const exportPem = (buffer: ArrayBuffer, type: 'PUBLIC KEY' | 'PRIVATE KEY') => {
@@ -19,10 +21,11 @@ export function RsaGeneratorTool() {
     setIsGenerating(true);
     setPublicKey('');
     setPrivateKey('');
-    
+    setError(null);
+
     // Use timeout to allow UI to update to Generating...
     await new Promise(resolve => setTimeout(resolve, 50));
-    
+
     try {
       const keyPair = await window.crypto.subtle.generateKey(
         {
@@ -48,7 +51,7 @@ export function RsaGeneratorTool() {
       setPrivateKey(exportPem(exportedPrivateKey, 'PRIVATE KEY'));
     } catch (err) {
       console.error(err);
-      alert("Erro ao gerar as chaves RSA.");
+      setError(err instanceof Error ? err.message : 'Erro ao gerar as chaves RSA.');
     } finally {
       setIsGenerating(false);
     }
@@ -58,26 +61,25 @@ export function RsaGeneratorTool() {
     <div className="h-full flex-col">
       <div className="tool-header">
         <h2>RSA Key Pair Generator</h2>
-        <p>Gerar chaves públicas e privadas temporárias para testes de criptografia.</p>
+        <p>Gerar chaves públicas e privadas temporárias para testes de criptografia. Uso: <strong>RSA-OAEP</strong> (criptografar/descriptografar) — não servem para assinatura digital.</p>
       </div>
 
       <div className="tool-body">
          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            
+
             <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                <label style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-secondary)' }}>Tamanho da Chave:</label>
-               <select 
-                 value={keySize} 
+               <select
+                 value={keySize}
                  onChange={(e) => setKeySize(Number(e.target.value))}
-                 style={{ 
-                   padding: '8px 12px', 
-                   background: 'var(--app-bg)', 
-                   color: 'var(--text-primary)', 
-                   border: '1px solid var(--border-color)', 
-                   borderRadius: '4px' 
+                 style={{
+                   padding: '8px 12px',
+                   background: 'var(--app-bg)',
+                   color: 'var(--text-primary)',
+                   border: '1px solid var(--border-color)',
+                   borderRadius: '4px'
                  }}
                >
-                 <option value={1024}>1024 bits</option>
                  <option value={2048}>2048 bits (Padrão)</option>
                  <option value={4096}>4096 bits (Lento)</option>
                </select>
@@ -86,6 +88,13 @@ export function RsaGeneratorTool() {
                  {isGenerating ? 'Gerando...' : 'Gerar Chaves'}
                </button>
             </div>
+
+            {error && (
+              <div style={{ color: 'var(--error-color)', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertCircle size={16} />
+                {error}
+              </div>
+            )}
 
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(250px, 1fr) minmax(250px, 1fr)', gap: '24px' }}>
                <div className="flex-col" style={{ gap: '8px' }}>

@@ -47,7 +47,7 @@ Todos em `app/src/components/`. Colunas: rota, bibliotecas externas além de Rea
 | `QrCodeGeneratorTool` | `/qrcode` | `qrcode.react` (`QRCodeSVG`) | Gera QR em SVG (nível de correção `L`). Controles: texto, tamanho (128–512, step 16), cor de código, cor de fundo. Botão baixa o SVG via `Blob` + `<a download>`. | `text`, `size`, `fgColor`, `bgColor` |
 | `UuidGeneratorTool` | `/uuid` | — | Gera UUID v4 via `crypto.randomUUID()`. Opções: quantidade (1–1000, sanitizada), maiúsculas, sem hífens. Copiar todos. | `uuids[]`, `count`, `uppercase`, `noHyphens` |
 | `PasswordGeneratorTool` | `/password` | — | Gera senha com `window.crypto.getRandomValues` (`Uint32Array`, módulo sobre o charset). Opções: tamanho (4–64), maiúsc./minúsc./números/símbolos. Regenera a cada mudança de opção. | `password`, `length`, 4× flags de charset |
-| `RsaGeneratorTool` | `/rsa` | — (WebCrypto) | Gera par RSA via `window.crypto.subtle.generateKey({name:'RSA-OAEP', hash:'SHA-256'}, …, ['encrypt','decrypt'])`. Exporta SPKI/PKCS8 → PEM manual (base64 + wrap 64). Tamanhos: 1024/2048/4096. `alert()` em erro. | `keySize`, `publicKey`, `privateKey`, `isGenerating` |
+| `RsaGeneratorTool` | `/rsa` | — (WebCrypto) | Gera par RSA via `window.crypto.subtle.generateKey({name:'RSA-OAEP', hash:'SHA-256'}, …, ['encrypt','decrypt'])`. Exporta SPKI/PKCS8 → PEM manual (base64 + wrap 64). Tamanhos: 2048/4096. Erro exibido inline (não mais `alert()`). | `keySize`, `publicKey`, `privateKey`, `isGenerating`, `error` |
 | `TextDiffTool` | `/diff` | `diff` (`Diff.diffLines`) | Compara dois textos linha a linha; renderiza `+`/`-`/contexto com cores. | `original`, `modified` (+ `diffResult` via `useMemo`) |
 | `CaseConverterTool` | `/case` | — | Converte o texto entre camelCase, PascalCase, snake_case, kebab-case, CONSTANT_CASE, UPPERCASE, lowercase. **Sobrescreve o próprio input** com o resultado (in-place). Tokenização por regex (`a-z`→`A-Z`, espaços, `_`, `-`). | `input` |
 | `BackslashEscapeTool` | `/backslash` | — | Escapa/desescapa sequências (`\\`, `\n`, `\r`, `\t`, `\0`, `\"`, `\'`, `\b`, `\f`, `\v`) via mapas + regex. Swap input↔output. Legenda de sequências suportadas. | `input`, `mode` (+ `output` via `useMemo`) |
@@ -57,7 +57,7 @@ Todos em `app/src/components/`. Colunas: rota, bibliotecas externas além de Rea
 
 - **`JwtDecoderTool`** — o export continua `JwtDecoderTool` (o spec `docs/superpowers/specs/2026-06-09-jwt-generator-design.md` previa renomear para `JwtTool`; não foi feito). O título exibido e o item do menu são "JWT Tool".
 - **`CaseConverterTool`** — não tem campo de saída separado; cada botão transforma `input` no lugar. Converter duas vezes pode perder informação (ex.: `UPPERCASE` depois `camelCase`).
-- **`RsaGeneratorTool`** — as chaves têm uso `encrypt`/`decrypt` (RSA-OAEP), não servem para assinatura. Descrição na UI: "chaves temporárias para testes".
+- **`RsaGeneratorTool`** — as chaves têm uso `encrypt`/`decrypt` (RSA-OAEP), não servem para assinatura; a descrição na UI já deixa isso explícito. Opção de 1024 bits removida (insegura); erro de geração agora é uma mensagem inline, não `alert()`.
 - **`UnixTimeConverterTool`** — "Date to Timestamp" interpreta o valor de `datetime-local` como horário **local** (`new Date(dateInput)`).
 - **`QrCodeGeneratorTool`** — usa a prop `includeMargin` do `qrcode.react`; em `qrcode.react` v4 essa prop foi substituída por `marginSize` (a antiga pode ser ignorada). Ver `docs/dependencies.md`.
 

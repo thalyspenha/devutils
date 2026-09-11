@@ -100,11 +100,11 @@
 
 - `window.crypto.subtle.generateKey` com `name: 'RSA-OAEP'`, `hash: 'SHA-256'`, `publicExponent: 65537`.
 - Usos da chave: `['encrypt', 'decrypt']` — **não** serve para assinatura/verificação.
-- Tamanhos: **1024 / 2048 (padrão) / 4096 (lento)**.
+- Tamanhos: **2048 (padrão) / 4096 (lento)**. Opção de 1024 bits (insegura) foi removida.
 - Export: `spki` (pública) e `pkcs8` (privada) → PEM montado manualmente (base64 quebrado em linhas de 64).
 - Delay artificial de 50ms antes de gerar, para a UI conseguir mostrar "Gerando...".
-- Erro → `alert("Erro ao gerar as chaves RSA.")`.
-- Descrição na UI enfatiza uso **temporário/para testes**.
+- Erro → mensagem inline (`var(--error-color)`, padrão do resto do app), não mais `alert()`.
+- Descrição na UI enfatiza uso **temporário/para testes** e deixa explícito que as chaves são para criptografar/descriptografar (`RSA-OAEP`), não para assinatura.
 
 ## Text Diff (`/diff`)
 

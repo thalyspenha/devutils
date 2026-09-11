@@ -114,7 +114,7 @@ Cada uma segue o padrão de 3 pontos do `CLAUDE.md` (componente + rota + item no
 
 Levantadas na revisão; não bloqueiam nada mas valem um PR de "faxina":
 
-- **RSA (`/rsa`):** ainda oferece **1024 bits** (inseguro); as chaves são `RSA-OAEP` uso `encrypt`/`decrypt` — não servem para assinatura. Ao menos tirar o 1024 e explicar o uso na UI. Erros via `alert()` (fora do padrão inline).
+- ~~**RSA (`/rsa`):** ainda oferece **1024 bits**...~~ **Corrigido** — opção de 1024 bits removida (só 2048/4096); descrição no `tool-header` agora explica que as chaves são `RSA-OAEP` (criptografar/descriptografar), não servem para assinatura; erro de geração virou mensagem inline (`var(--error-color)`) em vez de `alert()`.
 - **JWT decode:** mostra "Valid JWT" só checando que há 3 partes — **não verifica assinatura**. Renomear o rótulo para "Decodificado" ou adicionar verificação opcional com secret.
 - **CaseConverter (`/case`):** sobrescreve o próprio input (destrutivo, sem campo de saída separado). Converter duas vezes perde informação.
 - ~~**UuidGenerator (`/uuid`):** `count` não tem clamp real...~~ **Corrigido** — `onChange` agora faz `Math.min(Math.max(raw, 1), 1000)`; o `max="1000"` do HTML sozinho não impedia digitar valores maiores.
