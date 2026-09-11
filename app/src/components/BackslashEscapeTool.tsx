@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ArrowLeftRight, Trash2, Copy, Check } from 'lucide-react';
+import { ArrowLeftRight, Trash2, Copy, Check, ClipboardPaste } from 'lucide-react';
 import { useClipboardData } from '../hooks/useClipboardData';
 import { useCopy } from '../hooks/useCopy';
 
@@ -41,10 +41,7 @@ export function BackslashEscapeTool() {
   const [input, setInput] = useState('');
   const [mode, setMode] = useState<'escape' | 'unescape'>('escape');
   const { copy, copied } = useCopy();
-
-  useClipboardData((text) => {
-    setInput((cur) => cur || text);
-  });
+  const pasteFromClipboard = useClipboardData(setInput);
 
   const output = useMemo(() => {
     if (!input) return '';
@@ -85,9 +82,14 @@ export function BackslashEscapeTool() {
           <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
             <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
               <span style={{ fontWeight: 500 }}>Input</span>
-              <button className="secondary" style={{ padding: '6px' }} onClick={handleClear} title="Clear">
-                <Trash2 size={16} />
-              </button>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button className="secondary" style={{ padding: '6px' }} onClick={pasteFromClipboard} title="Colar da área de transferência">
+                  <ClipboardPaste size={16} />
+                </button>
+                <button className="secondary" style={{ padding: '6px' }} onClick={handleClear} title="Clear">
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
             <textarea
               value={input}

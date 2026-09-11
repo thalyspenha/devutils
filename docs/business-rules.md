@@ -5,7 +5,7 @@
 ## Regras transversais
 
 - **Processamento 100% local.** Nenhum dado inserido nas ferramentas é enviado para fora da máquina. Não há telemetria, analytics ou logging remoto. O app não faz nenhuma requisição de rede (a fonte Inter é empacotada — ver `docs/integrations.md`).
-- **Auto-preenchimento por clipboard.** Ferramentas que usam `useClipboardData` copiam o conteúdo do clipboard para o input **apenas se o input estiver vazio** no mount. Algumas aplicam um filtro antes de colar (ver abaixo).
+- **Colar do clipboard sob demanda.** Ferramentas que usam `useClipboardData` têm um botão "Colar da área de transferência" — o clipboard só é lido quando o usuário clica nele, nunca automaticamente no mount.
 - **Formatação "ao vivo".** A maioria das ferramentas recalcula o output a cada tecla (derivado com `useMemo`), sem botão "processar". Exceções com ação explícita: `UuidGenerator` ("Gerar"), `PasswordGenerator` ("Gerar Outra Senha"), `RsaGenerator` ("Gerar Chaves"), `JwtDecoder` aba Gerar ("Gerar JWT"), `UnixTime` timestamp→data ("Convert").
 - **Erros não destroem o input.** Entrada inválida mostra mensagem de erro e zera o output, mas mantém o que o usuário digitou.
 - **Tema dark fixo.** Não há troca de tema.
@@ -15,7 +15,7 @@
 
 - Válido → `JSON.stringify(JSON.parse(input), null, 2)` (indent de 2 espaços).
 - **Correção automática de backslash**: se o `JSON.parse` falhar, tenta uma vez trocar `\` não seguido de `["\/bfnrtu]` por `\\` (caso de paths Windows tipo `C:\Users\...`) e reparsear. Só então considera inválido.
-- Auto-cola do clipboard **somente** se o conteúdo for JSON parseável.
+- Botão "Colar" cola o conteúdo do clipboard no input sem filtro; a validação de JSON acontece depois, como qualquer outra entrada.
 - Status visual: "Waiting for input" / "Valid JSON" / "Invalid JSON".
 
 ## Base64 (`/base64`)
@@ -23,7 +23,7 @@
 - Encode: `btoa(unescape(encodeURIComponent(text)))` (suporta UTF-8).
 - Decode: `decodeURIComponent(escape(atob(text)))`.
 - Entrada inválida para o modo atual → erro "Invalid input for encode/decode".
-- Auto-detecção: ao colar do clipboard, se o texto casar com a regex de Base64 (`^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$`), muda automaticamente para o modo **decode**.
+- Auto-detecção: ao clicar em "Colar", se o texto casar com a regex de Base64 (`^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$`), muda automaticamente para o modo **decode**.
 - Botão de swap: troca input↔output **e** inverte o modo.
 
 ## JWT Tool (`/jwt`)
@@ -33,7 +33,7 @@
 - Exige exatamente **3 partes** separadas por `.`; caso contrário: "Invalid JWT format".
 - Decodifica header e payload como **base64url** (`-`→`+`, `_`→`/`, padding `=` reposto) e formata como JSON identado.
 - **Não verifica a assinatura** nem valida `exp`/`nbf`. Mostrar "Valid JVT" significa apenas "decodificou".
-- Auto-cola do clipboard só se houver 3 partes e comprimento > 20.
+- Botão "Colar" cola o conteúdo do clipboard sem filtro (a validação de 3 partes acontece depois, na decodificação).
 
 ### Aba Gerar
 

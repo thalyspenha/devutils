@@ -121,7 +121,7 @@ Levantadas na revisão; não bloqueiam nada mas valem um PR de "faxina":
 - ~~**`react-router-dom`:** `npm audit` aponta 2 CVEs high...~~ **Corrigido** — atualizado `^7.13.1` → `^7.18.3` (instalado `7.18.3`); zero avisos de `react-router`/`react-router-dom` no `npm audit`.
 - **QrCode (`/qrcode`):** prop `includeMargin` foi trocada por `marginSize` no `qrcode.react` v4 (a antiga é ignorada); export só em SVG — adicionar PNG seria útil.
 - ~~**`<title>Devtools</title>`** no `index.html`~~ **Corrigido** — `<title>` agora é `DevUtils`, consistente com `productName` do electron-builder. A Sidebar ainda mostra "DevUtils Linux" — unificar esse rótulo continua no item 1.5.
-- **`useClipboardData`:** lê o clipboard automaticamente em toda montagem de tool — comportamento discreto mas surpreendente; considerar um opt-in visível ou botão "colar do clipboard".
+- ~~**`useClipboardData`:** lê o clipboard automaticamente em toda montagem de tool...~~ **Corrigido** — hook reescrito para expor um `paste()` sob demanda; cada tool ganhou um botão "Colar da área de transferência" (ícone `ClipboardPaste`) e o clipboard não é mais lido sozinho no mount.
 
 ---
 

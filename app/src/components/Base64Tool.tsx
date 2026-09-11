@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ArrowLeftRight, Trash2, Copy, Check } from 'lucide-react';
+import { ArrowLeftRight, Trash2, Copy, Check, ClipboardPaste } from 'lucide-react';
 import { useClipboardData } from '../hooks/useClipboardData';
 import { useCopy } from '../hooks/useCopy';
 
@@ -8,8 +8,7 @@ export function Base64Tool() {
   const [mode, setMode] = useState<'encode' | 'decode'>('encode');
   const { copy, copied } = useCopy();
 
-  useClipboardData((text) => {
-    if (input) return;
+  const pasteFromClipboard = useClipboardData((text) => {
     setInput(text);
     // Auto-detecta Base64 para já mudar para o modo decode
     const isBase64 = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$/.test(text);
@@ -69,9 +68,14 @@ export function Base64Tool() {
           <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
             <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
               <span style={{ fontWeight: 500 }}>Input</span>
-              <button className="secondary" style={{ padding: '6px' }} onClick={handleClear} title="Clear">
-                <Trash2 size={16} />
-              </button>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button className="secondary" style={{ padding: '6px' }} onClick={pasteFromClipboard} title="Colar da área de transferência">
+                  <ClipboardPaste size={16} />
+                </button>
+                <button className="secondary" style={{ padding: '6px' }} onClick={handleClear} title="Clear">
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
             <textarea 
               value={input}

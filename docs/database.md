@@ -19,7 +19,7 @@ Evidências no código:
 - **Sem** arquivos de configuração de usuário gravados em disco.
 - **Sem** cache persistente da aplicação.
 
-O único dado externo que entra no app é o **conteúdo do clipboard do sistema**, lido em tempo de execução por `useClipboardData` (`navigator.clipboard.readText()`) e nunca gravado em lugar nenhum.
+O único dado externo que entra no app é o **conteúdo do clipboard do sistema**, lido sob demanda (botão "Colar") por `useClipboardData` (`navigator.clipboard.readText()`) e nunca gravado em lugar nenhum.
 
 ## Entidades
 

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Trash2, AlertCircle, CheckCircle2, Copy, Check } from 'lucide-react';
+import { Trash2, AlertCircle, CheckCircle2, Copy, Check, ClipboardPaste } from 'lucide-react';
 import CryptoJS from 'crypto-js';
 import { useClipboardData } from '../hooks/useClipboardData';
 import { useCopy } from '../hooks/useCopy';
@@ -34,14 +34,7 @@ export function JwtDecoderTool() {
   const [generatedToken, setGeneratedToken] = useState('');
   const [genError, setGenError] = useState<string | null>(null);
   const { copy, copied } = useCopy();
-
-  useClipboardData((text) => {
-    if (input) return;
-    const parts = text.split('.');
-    if (parts.length === 3 && text.length > 20) {
-      setInput(text);
-    }
-  });
+  const pasteFromClipboard = useClipboardData(setInput);
 
   const { header, payload, error } = useMemo<{ header: string; payload: string; error: string | null }>(() => {
     if (!input.trim()) return { header: '', payload: '', error: null };
@@ -113,9 +106,14 @@ export function JwtDecoderTool() {
           <div className="flex-col glass-panel" style={{ padding: '16px', minHeight: '120px', flex: '0 0 auto' }}>
             <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
               <span style={{ fontWeight: 500, color: 'var(--text-secondary)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Encoded JWT</span>
-              <button className="secondary" style={{ padding: '6px' }} onClick={() => setInput('')} title="Clear">
-                <Trash2 size={16} />
-              </button>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button className="secondary" style={{ padding: '6px' }} onClick={pasteFromClipboard} title="Colar da área de transferência">
+                  <ClipboardPaste size={16} />
+                </button>
+                <button className="secondary" style={{ padding: '6px' }} onClick={() => setInput('')} title="Clear">
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
             <textarea
               value={input}

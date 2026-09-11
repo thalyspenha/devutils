@@ -18,7 +18,7 @@ Nenhum componente usa `fetch`, `XMLHttpRequest`, WebSocket ou `axios`.
 
 | Recurso | API | Uso |
 |---|---|---|
-| Área de transferência (leitura) | `navigator.clipboard.readText()` | `useClipboardData(onData)` — lê o clipboard uma vez após o mount e entrega via callback; as tools auto-preenchem o input se estiver vazio |
+| Área de transferência (leitura) | `navigator.clipboard.readText()` | `useClipboardData(onData)` — retorna uma função `paste()` chamada pelo botão "Colar da área de transferência"; nunca lê sozinho no mount |
 | Área de transferência (escrita) | `navigator.clipboard.writeText()` | Botões "Copiar" |
 | Navegador padrão | Electron `shell.openExternal` | Abrir links fora da janela |
 | Download de arquivo | `<a download>` + `Blob` | Salvar QR Code como SVG (`QrCodeGeneratorTool`) |

@@ -1,21 +1,12 @@
 import { useState, useMemo } from 'react';
-import { Trash2, Copy, Check, FileJson, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Trash2, Copy, Check, FileJson, CheckCircle2, AlertCircle, ClipboardPaste } from 'lucide-react';
 import { useClipboardData } from '../hooks/useClipboardData';
 import { useCopy } from '../hooks/useCopy';
 
 export function JsonFormatterTool() {
   const [input, setInput] = useState('');
   const { copy, copied } = useCopy();
-
-  useClipboardData((text) => {
-    if (input) return;
-    try {
-      JSON.parse(text);
-      setInput(text);
-    } catch {
-      // não é JSON, não cola
-    }
-  });
+  const pasteFromClipboard = useClipboardData(setInput);
 
   const { output, error } = useMemo<{ output: string; error: string | null }>(() => {
     if (!input.trim()) return { output: '', error: null };
@@ -64,6 +55,9 @@ export function JsonFormatterTool() {
           </div>
           
           <div className="flex gap-2">
+             <button className="secondary" onClick={pasteFromClipboard} title="Colar da área de transferência">
+                <ClipboardPaste size={16} />
+              </button>
              <button className="secondary" onClick={() => setInput('')} title="Clear">
                 <Trash2 size={16} />
               </button>

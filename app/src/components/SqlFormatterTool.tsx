@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Copy, Check, Trash2 } from 'lucide-react';
+import { Copy, Check, Trash2, ClipboardPaste } from 'lucide-react';
 import { format } from 'sql-formatter';
 import { useClipboardData } from '../hooks/useClipboardData';
 import { useCopy } from '../hooks/useCopy';
@@ -17,10 +17,7 @@ export function SqlFormatterTool() {
   const [input, setInput] = useState('');
   const [dialect, setDialect] = useState<Dialect>('sql');
   const { copy, copied } = useCopy();
-
-  useClipboardData((text) => {
-    setInput((cur) => cur || text);
-  });
+  const pasteFromClipboard = useClipboardData(setInput);
 
   const { output, error } = useMemo<{ output: string; error: string }>(() => {
     if (!input.trim()) return { output: '', error: '' };
@@ -73,9 +70,14 @@ export function SqlFormatterTool() {
           <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
             <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
               <span style={{ fontWeight: 500 }}>Input</span>
-              <button className="secondary" style={{ padding: '6px' }} onClick={handleClear} title="Limpar">
-                <Trash2 size={16} />
-              </button>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button className="secondary" style={{ padding: '6px' }} onClick={pasteFromClipboard} title="Colar da área de transferência">
+                  <ClipboardPaste size={16} />
+                </button>
+                <button className="secondary" style={{ padding: '6px' }} onClick={handleClear} title="Limpar">
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
             <textarea
               value={input}

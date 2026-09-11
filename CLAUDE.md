@@ -37,7 +37,7 @@ Electron main (app/main.cjs)  ──cria──►  BrowserWindow única
 ```
 
 - **Sem IPC** entre main e renderer. **Sem estado global** — cada ferramenta usa `useState`/`useEffect`/`useMemo`.
-- Código compartilhado de comportamento (`app/src/hooks/`): `useClipboardData.ts` (auto-preenche input a partir do clipboard) e `useCopy.ts` (feedback "Copiado!" nos botões de copiar).
+- Código compartilhado de comportamento (`app/src/hooks/`): `useClipboardData.ts` (retorna um `paste()` chamado pelo botão "Colar da área de transferência" — nunca lê o clipboard sozinho) e `useCopy.ts` (feedback "Copiado!" nos botões de copiar).
 - Padrão de ferramenta: input controlado → cálculo derivado ao vivo → output read-only, dentro de `.tool-header` + `.tool-body`.
 
 ## 4. Regras importantes
@@ -58,7 +58,7 @@ Electron main (app/main.cjs)  ──cria──►  BrowserWindow única
 - Estilo: usar CSS vars (`var(--text-primary)`, `var(--accent-color)`, `var(--error-color)`, `var(--border-color)`, `var(--app-bg)`…), classes utilitárias existentes (`flex`, `flex-col`, `flex-1`, `glass-panel`, `secondary`) e `style={{}}` inline para ajustes. Sem CSS novo global salvo necessidade real.
 - Lógica **inline no componente** — não criar hooks/abstrações novas sem motivo.
 - Cálculo derivado em `useMemo` (preferir sobre `useEffect` + estado espelho — o `eslint-plugin-react-hooks` v7 barra `setState` dentro de efeito/render); try/catch em volta de parsers, erro em `var(--error-color)` sem apagar o input.
-- `useClipboardData(onData, enabled?)`: recebe callback; o `setState` do auto-preenchimento roda no callback (fora de efeito), com guarda de "só se o input estiver vazio".
+- `useClipboardData(onData)`: retorna uma função `paste()` para ligar num botão explícito ("Colar da área de transferência") — não ler o clipboard automaticamente no mount de uma ferramenta.
 - Commits: mensagens curtas em PT-BR, prefixo `feat:` / `fix:` / `docs:` (padrão observável no histórico recente).
 - Verificação antes de commitar: `cd app && npm run lint && npm run build` (lint + `tsc -b` + `vite build`, todos verdes) e teste manual com `cd app && npm run dev`.
 - ⚠️ `tsc -b` roda com `noUnusedLocals`/`noUnusedParameters`: nada de imports/vars/params não usados (ex.: `import React` sem uso quebra o build). `catch (e)` sem uso → usar `catch {}`.

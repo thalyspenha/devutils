@@ -104,11 +104,12 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 - **Evidência:** `src/main.tsx`, `src/index.css`, `package.json`, commit `eaf847b`.
 - **Racional:** o app se propõe offline-first (privacidade — dados nunca saem da máquina); o `@import` era a única requisição de rede e contradizia isso.
 
-## D15 — `useClipboardData` com API de callback
+## D15 — `useClipboardData` com API de callback (versão original — ver D19)
 
 - **Decisão:** `useClipboardData(onData, enabled?)` — hook chama o callback com o texto do clipboard; o `setState` do auto-preenchimento acontece no callback, não em `useEffect`.
 - **Evidência:** `src/hooks/useClipboardData.ts`, commit `7a24379`.
 - **Racional:** o `eslint-plugin-react-hooks` v7 (`set-state-in-effect`) barra `setState` sincronizado dentro de efeito; a API de callback resolve isso e ainda cancela o timer no unmount.
+- **Superada pela D19:** essa versão ainda lia o clipboard sozinha ~100ms após o mount de cada ferramenta. O formato do hook (retornar callback) segue válido; o comportamento automático foi removido.
 
 ## D17 — Command palette, error boundary e `useCopy`
 
@@ -123,6 +124,13 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 - **Racional:** comparação lado a lado confirmou que **Node 24.21.0 extrai o mesmo zip normalmente** (<1s). O projeto já assumia Node 24 implicitamente (`@types/node: ^24.12.0`), só não estava declarado. Fixar a versão evita esse bug de compatibilidade.
 - **Consequência:** fecha a lacuna "versão de Node: Não identificado" que existia em `docs/infrastructure.md`. Causa raiz exata do bug do `extract-zip`/`yauzl` no Node 26 não foi investigada a fundo (biblioteca sem manutenção ativa); a mitigação é não usar Node 26 neste projeto, não um patch na lib.
 - **Ver também:** `docs/infrastructure.md` (ressalva sobre o bug).
+
+## D19 — `useClipboardData` deixa de ler o clipboard sozinho no mount
+
+- **Decisão:** o hook não dispara mais `navigator.clipboard.readText()` automaticamente ~100ms após montar uma ferramenta (comportamento da D15). Agora `useClipboardData(onData)` retorna uma função `paste()`, ligada a um botão visível "Colar da área de transferência" (ícone `ClipboardPaste` do `lucide-react`) em cada uma das 5 ferramentas que usam o hook (`JsonFormatterTool`, `Base64Tool`, `JwtDecoderTool`, `BackslashEscapeTool`, `SqlFormatterTool`).
+- **Evidência:** `src/hooks/useClipboardData.ts` reescrito; botão adicionado no header do painel de input de cada tool consumidora.
+- **Racional:** item 8 da lista de dívida técnica em `docs/roadmap.md` — ler o clipboard do sistema sem nenhuma ação do usuário é um comportamento discreto mas surpreendente do ponto de vista de privacidade/UX, mesmo sem enviar o dado pra fora da máquina.
+- **Consequência:** os filtros que antes decidiam se auto-colava (JSON precisa parsear, JWT precisa ter 3 partes, etc.) foram removidos — agora o botão sempre cola o texto bruto, e a validação normal de cada ferramenta mostra o erro se o conteúdo não servir (mesmo comportamento de digitar/colar manualmente com Ctrl+V). A detecção automática de Base64 no `Base64Tool` (troca pro modo decode) foi mantida, agora rodando no clique do botão.
 
 ---
 

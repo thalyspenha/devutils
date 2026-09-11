@@ -84,7 +84,7 @@ Script mínimo. No `DOMContentLoaded`, tenta preencher elementos com id `chrome-
 
 - **Sem store global** (sem Redux/Zustand/Context de estado). Cada componente gerencia o próprio estado com `useState` / `useEffect` / `useMemo`.
 - Padrão dominante: input controlado → recálculo derivado (em `useEffect` ou `useMemo`) → output read-only.
-- Único código compartilhado de comportamento: `app/src/hooks/useClipboardData.ts` — `useClipboardData(onData, enabled?)` lê `navigator.clipboard.readText()` uma vez após o mount (delay de 100ms) e chama `onData(texto)`; várias ferramentas usam para auto-preencher o input (só se estiver vazio). O `setState` acontece no callback, não em efeito.
+- Código compartilhado de comportamento: `app/src/hooks/useClipboardData.ts` — `useClipboardData(onData)` retorna uma função `paste()` que só lê `navigator.clipboard.readText()` quando chamada (botão "Colar da área de transferência" em cada ferramenta); nunca lê sozinho no mount. `app/src/hooks/useCopy.ts` cobre o lado de escrita (feedback "Copiado!").
 - **Sem IPC**: o renderer não se comunica com o processo main em runtime.
 
 ### Estilização

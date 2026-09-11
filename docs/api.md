@@ -37,7 +37,7 @@ Definidas em `app/src/App.tsx` com `<HashRouter>` (URLs reais têm o prefixo `#`
 
 | API | Onde é usada | Finalidade |
 |---|---|---|
-| `navigator.clipboard.readText()` | `hooks/useClipboardData.ts` | Auto-preencher input a partir do clipboard |
+| `navigator.clipboard.readText()` | `hooks/useClipboardData.ts` | Colar no input sob clique do botão "Colar da área de transferência" |
 | `navigator.clipboard.writeText()` | quase todas as ferramentas | Botões "Copiar" |
 | `window.crypto.getRandomValues()` | `PasswordGeneratorTool` | Aleatoriedade da senha |
 | `crypto.randomUUID()` | `UuidGeneratorTool` | Geração de UUID v4 |

@@ -21,13 +21,12 @@
 | `app/src/components/ErrorBoundary.tsx` | Class component. Captura erros de render de qualquer ferramenta (`getDerivedStateFromError`) e mostra uma tela de recuperação (`.error-boundary`) com a mensagem + botão "Tentar de novo", em vez de tela branca. Reseta sozinho quando `resetKey` muda (troca de rota). |
 | `app/src/index.css` | Único stylesheet global. Variáveis de tema (dark fixo), classes utilitárias, componentes de layout (`.sidebar`, `.tool-header`, `.tool-body`, `.glass-panel`, `.command-palette`, `.error-boundary`). |
 
-| `app/src/hooks/useClipboardData.ts` | Hook `useClipboardData(onData, enabled = true)`. Lê o clipboard uma vez (~100ms após mount) via `navigator.clipboard.readText()` e chama `onData(texto)`. Cancela o timer no unmount. Falha silenciosa (`console.warn`) se sem permissão. Não retorna nada — o `setState` acontece no callback. |
+| `app/src/hooks/useClipboardData.ts` | Hook `useClipboardData(onData)`. Retorna uma função `paste()` que lê o clipboard via `navigator.clipboard.readText()` **só quando chamada** (nunca sozinha no mount) e passa o texto para `onData`. Falha silenciosa (`console.warn`) se sem permissão. |
 | `app/src/hooks/useCopy.ts` | Hook `useCopy(timeout = 1500)`. Retorna `{ copy, copiedKey, copied }`. `copy(text, key?)` escreve no clipboard e marca `copiedKey` por `timeout` ms (feedback "Copiado!" nos botões). Telas com um botão usam `copied`; telas com vários (RSA, Hash) passam uma `key` e comparam com `copiedKey`. Falha silenciosa se o clipboard estiver indisponível. |
 
 ### `useClipboardData` — consumidores
 
-Usam o hook para auto-preencher o input no mount (somente se o input estiver vazio):
-`JsonFormatterTool` (só cola se o texto for JSON válido), `Base64Tool` (detecta Base64 e muda para modo decode), `JwtDecoderTool` (só cola se tiver 3 partes separadas por `.` e >20 chars), `BackslashEscapeTool`, `SqlFormatterTool`.
+Todas têm um botão "Colar da área de transferência" (ícone `ClipboardPaste`) perto do campo de input, que chama a função retornada pelo hook: `JsonFormatterTool`, `Base64Tool` (detecta Base64 no texto colado e muda para modo decode), `JwtDecoderTool`, `BackslashEscapeTool`, `SqlFormatterTool`.
 
 ### `useCopy` — consumidores
 
