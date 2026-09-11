@@ -9,7 +9,7 @@
 - **Formatação "ao vivo".** A maioria das ferramentas recalcula o output a cada tecla (derivado com `useMemo`), sem botão "processar". Exceções com ação explícita: `UuidGenerator` ("Gerar"), `PasswordGenerator` ("Gerar Outra Senha"), `RsaGenerator` ("Gerar Chaves"), `JwtDecoder` aba Gerar ("Gerar JWT"), `UnixTime` timestamp→data ("Convert").
 - **Erros não destroem o input.** Entrada inválida mostra mensagem de erro e zera o output, mas mantém o que o usuário digitou.
 - **Tema dark fixo.** Não há troca de tema.
-- **Textos de UI majoritariamente PT-BR.** Descrições, labels, botões, placeholders e mensagens de erro/estado são PT-BR nas 15 tools; só os **títulos** (`<h2>`) continuam em inglês, para bater com o nome em `TOOLS[]`/Sidebar (ex.: "JSON Formatter", "RegExp Tester") — ver `docs/decisions.md`.
+- **Textos de UI majoritariamente PT-BR.** Descrições, labels, botões, placeholders e mensagens de erro/estado são PT-BR nas 16 tools; só os **títulos** (`<h2>`) continuam em inglês, para bater com o nome em `TOOLS[]`/Sidebar (ex.: "JSON Formatter", "RegExp Tester") — ver `docs/decisions.md`.
 
 ## JSON Formatter (`/`)
 
@@ -133,6 +133,13 @@
 - Indentação (2 espaços) e keywords em maiúsculo são **fixos** (não expostos na UI).
 - Trocar o dialeto reformata o SQL já digitado.
 - Em erro de parse: exibe **apenas a primeira linha** da mensagem de erro (`message.split('\n')[0]`) — decisão registrada no commit `874267f` para não despejar a gramática inteira. O painel de output passa a mostrar o erro (não mantém mais o último SQL formatado).
+
+## Chmod Calculator (`/chmod`)
+
+- Estado canônico é a string octal (3 dígitos `0`–`7`: dono/grupo/outros). Checkboxes rwx e o campo octal são duas visões editáveis do mesmo estado; simbólico (`rwxr-xr-x`) e comando (`chmod NNN arquivo`) são só derivados, read-only.
+- Cada dígito octal é um bitmask: leitura=4, escrita=2, execução=1. Clicar um checkbox faz XOR do bit correspondente no dígito da categoria.
+- Campo octal: filtra tudo que não for `0`–`7` e trunca em 3 caracteres (`value.replace(/[^0-7]/g, '').slice(0, 3)`); dígitos ausentes (enquanto o usuário ainda está digitando) contam como `0` só para o cálculo de checkboxes/simbólico/comando — o campo em si mostra exatamente o que foi digitado, sem padding.
+- Valor padrão: `644` (leitura/escrita pro dono, só leitura pra grupo/outros — permissão comum de arquivo novo).
 
 ## O que não foi identificado
 

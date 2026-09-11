@@ -100,11 +100,14 @@ Cada uma segue o padrão de 3 pontos do `CLAUDE.md` (componente + rota + item no
 | `.env` ↔ JSON | `/dotenv` | — | Parser simples |
 | Slugify | `/slug` | — | Reusa a tokenização do CaseConverter |
 | HTML entities encode/decode | `/html-entities` | — | |
-| Calculadora de chmod / permissões Unix | `/chmod` | — | rwx ↔ octal, checkboxes |
+| ~~Calculadora de chmod / permissões Unix~~ | ~~`/chmod`~~ | — | ✅ **feito** — ver abaixo |
 | Lorem ipsum / dados fake | `/lorem` | `@faker-js/faker` (grande — avaliar) | |
 | ULID / nanoid (junto do UUID) | — | `ulid`, `nanoid` | Estender `UuidGeneratorTool` |
 
----
+### Calculadora de chmod / permissões Unix (`/chmod`) · ✅ feito
+- **O quê:** nova ferramenta `ChmodCalculatorTool` — checkboxes rwx (dono/grupo/outros) ↔ número octal, ambos editáveis e sincronizados; simbólico (`rwxr-xr-x`) e comando `chmod NNN arquivo` derivados, read-only, com botão copiar cada um.
+- **Entregue:** `src/components/ChmodCalculatorTool.tsx` (3 pontos do padrão do `CLAUDE.md`: componente + rota `/chmod` em `App.tsx` + item `chmod` em `TOOLS[]`, ícone `FileLock2`). Estado canônico é a string octal (`useState('644')`); checkboxes fazem XOR do bit (4/2/1) no dígito da categoria, campo octal filtra `[0-7]` e trunca em 3 chars — nenhuma lógica extraída pra `src/lib/` (sem teste de unidade pedido para esta ferramenta, então fica inline no componente, como manda a seção 5 do `CLAUDE.md`).
+- **Pronto quando:** rota nova + item no menu, sem lib nova, sem CSS novo. ✅ `npm run lint`, `npm test` (29 testes, inalterados) e `npm run build` passam — a tool virou chunk próprio via code-split (~3.4 KB).
 
 ## Correções pontuais conhecidas (dívida técnica)
 

@@ -19,6 +19,7 @@ const TextDiffTool = lazy(() => import('./components/TextDiffTool').then((m) => 
 const CaseConverterTool = lazy(() => import('./components/CaseConverterTool').then((m) => ({ default: m.CaseConverterTool })));
 const BackslashEscapeTool = lazy(() => import('./components/BackslashEscapeTool').then((m) => ({ default: m.BackslashEscapeTool })));
 const SqlFormatterTool = lazy(() => import('./components/SqlFormatterTool').then((m) => ({ default: m.SqlFormatterTool })));
+const ChmodCalculatorTool = lazy(() => import('./components/ChmodCalculatorTool').then((m) => ({ default: m.ChmodCalculatorTool })));
 
 function RouteFallback() {
   return (
@@ -52,6 +53,7 @@ function ToolRoutes() {
           <Route path="/case" element={<CaseConverterTool />} />
           <Route path="/backslash" element={<BackslashEscapeTool />} />
           <Route path="/sql" element={<SqlFormatterTool />} />
+          <Route path="/chmod" element={<ChmodCalculatorTool />} />
         </Routes>
       </Suspense>
     </ErrorBoundary>

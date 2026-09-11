@@ -14,6 +14,7 @@ import {
   Type,
   Slash,
   Database,
+  FileLock2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -30,6 +31,7 @@ export const TOOLS: Tool[] = [
   { id: 'backslash', name: 'Backslash Escape', icon: Slash, path: '/backslash' },
   { id: 'base64', name: 'Base64 Formatter', icon: Code, path: '/base64' },
   { id: 'case', name: 'Case Converter', icon: Type, path: '/case' },
+  { id: 'chmod', name: 'Chmod Calculator', icon: FileLock2, path: '/chmod' },
   { id: 'cron', name: 'Cron Parser', icon: CalendarClock, path: '/cron' },
   { id: 'sql', name: 'Formatador de SQL', icon: Database, path: '/sql' },
   { id: 'hash', name: 'Hash Generator', icon: Hash, path: '/hash' },
