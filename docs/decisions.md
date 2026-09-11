@@ -108,6 +108,18 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 - **Evidência:** `src/hooks/useClipboardData.ts`, commit `7a24379`.
 - **Racional:** o `eslint-plugin-react-hooks` v7 (`set-state-in-effect`) barra `setState` sincronizado dentro de efeito; a API de callback resolve isso e ainda cancela o timer no unmount.
 
+## D16 — `ELECTRON_OVERRIDE_DIST_PATH` aponta para o wrapper (`bin/`), não o binário cru
+
+- **Decisão:** no `shell.nix`, `ELECTRON_OVERRIDE_DIST_PATH = "${electron}/bin"` (era `"${electron}/libexec/electron"`).
+- **Evidência:** `shell.nix`; `node_modules/electron/index.js` faz `path.join(EODP, "electron")`.
+- **Racional:** o binário em `libexec/electron/electron`, rodado sem as envs que o wrapper `bin/electron` exporta (`GDK_PIXBUF_MODULE_FILE`, `XDG_DATA_DIRS`, `GIO_EXTRA_MODULES`, `CHROME_DEVEL_SANDBOX`), bate num `CHECK()` do Chromium no start e aborta com `SIGILL` — até no `electron --version`. Apontar para o wrapper resolve. Ver `docs/infrastructure.md`.
+
+## D17 — Command palette, error boundary e `useCopy`
+
+- **Decisão:** (1) lista de ferramentas extraída para `src/tools.ts` (consumida por `Sidebar` + `CommandPalette`); (2) `<CommandPalette/>` com busca fuzzy inline (sem lib), atalho `Ctrl`/`Cmd`+`K`; (3) `<ErrorBoundary>` (class component) em volta das rotas, reseta ao trocar de rota; (4) hook `useCopy` para o feedback "Copiado!" em todos os botões de copiar.
+- **Evidência:** `src/tools.ts`, `src/components/CommandPalette.tsx`, `src/components/ErrorBoundary.tsx`, `src/hooks/useCopy.ts`; merge `28bbfdd`.
+- **Racional:** itens 1.1/1.3/1.4 do `docs/roadmap.md`. Sem lib de estado, sem toast/portal novo, seguindo as restrições do `CLAUDE.md`.
+
 ---
 
 ## Divergências entre decisão documentada e código

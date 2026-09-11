@@ -38,10 +38,12 @@ Definido em `app/package.json`:
 - `vite.config.ts` define `server: { port: 1234, strictPort: true }` — casa com o `wait-on tcp:1234` e o `loadURL(:1234)`. (Antes o Vite subia na 5173 default e o fluxo dev não destravava — corrigido.)
 
 > ⚠️ **Electron em NixOS:** o binário `electron@41` baixado pelo npm não roda direto (`libglib-2.0.so.0: cannot open shared object file`). O `shell.nix` na raiz resolve isso: traz `nodejs_24` + `electron_41` do nixpkgs e exporta `ELECTRON_OVERRIDE_DIST_PATH`, fazendo o pacote npm `electron` usar o binário do nixpkgs. Entra com `nix-shell` ou automático via `.envrc` (`direnv allow`). Não afeta o empacotamento (`npm run dist` baixa o dist oficial p/ AppImage portável).
+>
+> `ELECTRON_OVERRIDE_DIST_PATH` aponta para `${electron}/bin` (o **wrapper**), não para `${electron}/libexec/electron` (o binário cru). O `index.js` do pacote npm faz `path.join(EODP, "electron")`. O binário cru, rodado sem as envs que o wrapper exporta (`GDK_PIXBUF_MODULE_FILE`, `XDG_DATA_DIRS`, `GIO_EXTRA_MODULES`, `CHROME_DEVEL_SANDBOX`), bate num `CHECK()` do Chromium logo no start e aborta com **`SIGILL`** (`electron exited with signal SIGILL`) — acontecia até no `electron --version`. Se voltar a aparecer SIGILL depois de mexer no `shell.nix`, rode `direnv reload` (o shell antigo mantém o valor velho em memória).
 
 ## Ambiente reprodutível (Nix)
 
-- `shell.nix` (raiz) — `nodejs_24`, `electron_41`, `resvg` (regen do ícone) + `ELECTRON_OVERRIDE_DIST_PATH`.
+- `shell.nix` (raiz) — `nodejs_24`, `electron_41`, `resvg` (regen do ícone) + `ELECTRON_OVERRIDE_DIST_PATH = "${electron}/bin"` (wrapper — ver ressalva acima).
 - `.envrc` — `use nix` (nix-direnv). `direnv allow` uma vez → o shell carrega ao entrar na pasta.
 - `.gitignore` (raiz) — ignora `.direnv/` e `result*`.
 - Ainda **sem** `engines`/`.nvmrc` no `app/package.json` (o `shell.nix` cobre a versão de Node em dev).
