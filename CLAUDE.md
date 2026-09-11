@@ -70,7 +70,7 @@ Documentação detalhada em **`/docs`**:
 | Arquivo | Conteúdo |
 |---|---|
 | [`docs/architecture.md`](docs/architecture.md) | Processos Electron, renderer, roteamento, build, estrutura de pastas |
-| [`docs/modules.md`](docs/modules.md) | Núcleo do renderer + tabela dos 15 componentes-ferramenta |
+| [`docs/modules.md`](docs/modules.md) | Núcleo do renderer + tabela dos 16 componentes-ferramenta |
 | [`docs/database.md`](docs/database.md) | (Não aplicável — sem banco / sem persistência) |
 | [`docs/api.md`](docs/api.md) | Rotas do renderer + APIs de plataforma (Web/Electron). Sem API HTTP. |
 | [`docs/business-rules.md`](docs/business-rules.md) | Regras e heurísticas de cada ferramenta |
