@@ -117,10 +117,10 @@ Levantadas na revisão; não bloqueiam nada mas valem um PR de "faxina":
 - **RSA (`/rsa`):** ainda oferece **1024 bits** (inseguro); as chaves são `RSA-OAEP` uso `encrypt`/`decrypt` — não servem para assinatura. Ao menos tirar o 1024 e explicar o uso na UI. Erros via `alert()` (fora do padrão inline).
 - **JWT decode:** mostra "Valid JWT" só checando que há 3 partes — **não verifica assinatura**. Renomear o rótulo para "Decodificado" ou adicionar verificação opcional com secret.
 - **CaseConverter (`/case`):** sobrescreve o próprio input (destrutivo, sem campo de saída separado). Converter duas vezes perde informação.
-- **UuidGenerator (`/uuid`):** `count` não tem clamp real (o `max="1000"` do input não impede digitar `999999` → trava a UI no loop).
-- **`react-router-dom`:** `npm audit` aponta 2 CVEs high (todas SSR/RSC — não exploráveis neste app, mas dá pra subir a versão sem custo).
+- ~~**UuidGenerator (`/uuid`):** `count` não tem clamp real...~~ **Corrigido** — `onChange` agora faz `Math.min(Math.max(raw, 1), 1000)`; o `max="1000"` do HTML sozinho não impedia digitar valores maiores.
+- ~~**`react-router-dom`:** `npm audit` aponta 2 CVEs high...~~ **Corrigido** — atualizado `^7.13.1` → `^7.18.3` (instalado `7.18.3`); zero avisos de `react-router`/`react-router-dom` no `npm audit`.
 - **QrCode (`/qrcode`):** prop `includeMargin` foi trocada por `marginSize` no `qrcode.react` v4 (a antiga é ignorada); export só em SVG — adicionar PNG seria útil.
-- **`<title>Devtools</title>`** no `index.html` (ver 1.5).
+- ~~**`<title>Devtools</title>`** no `index.html`~~ **Corrigido** — `<title>` agora é `DevUtils`, consistente com `productName` do electron-builder. A Sidebar ainda mostra "DevUtils Linux" — unificar esse rótulo continua no item 1.5.
 - **`useClipboardData`:** lê o clipboard automaticamente em toda montagem de tool — comportamento discreto mas surpreendente; considerar um opt-in visível ou botão "colar do clipboard".
 
 ---

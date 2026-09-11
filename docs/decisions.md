@@ -140,5 +140,5 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 - Escolha das versões de Electron 41 / Vite 8 / React 19.
 - Ausência de `contextBridge` / IPC.
 - Mistura de idiomas na UI (PT-BR e EN coexistem: "JSON Formatter"/"Format, validate…" vs. "Formatador de SQL"/"Formata queries…").
-- Nome do produto: `index.html` `<title>` = "Devtools"; Sidebar = "DevUtils Linux"; `productName` do electron-builder = "DevUtils"; diretório = `devutils`.
+- Nome do produto: `index.html` `<title>` = "DevUtils" (corrigido — era "Devtools"); Sidebar ainda = "DevUtils Linux"; `productName` do electron-builder = "DevUtils"; diretório = `devutils`. Sidebar e `<title>` agora batem; falta só unificar/remover o "Linux" da Sidebar (ver `docs/roadmap.md` 1.5).
 - Ausência de CI, Dockerfile, `engines`/`.nvmrc`.

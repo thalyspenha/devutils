@@ -35,7 +35,10 @@ export function UuidGeneratorTool() {
                 type="number" 
                 min="1" max="1000"
                 value={count}
-                onChange={(e) => setCount(Number(e.target.value.replace(/\D/g, '')) || 1)}
+                onChange={(e) => {
+                  const raw = Number(e.target.value.replace(/\D/g, '')) || 1;
+                  setCount(Math.min(Math.max(raw, 1), 1000));
+                }}
                 style={{ 
                   padding: '10px 12px', 
                   borderRadius: '6px', 
