@@ -67,15 +67,17 @@
 - **Entregue:** `node-forge`, `@types/node-forge` removidos de `app/package.json`/`package-lock.json`; `app/test-forge.js` apagado.
 - **Falta:** avaliar/remover `@types/qrcode.react` (tipos da v1 para lib na v4) e `@types/diff` (possível redundância).
 
-### 2.4 Endurecer a segurança do Electron · M
+### 2.4 Endurecer a segurança do Electron · M · ✅ feito
 - **O quê:** `contextIsolation: true` + `nodeIntegration: false` + `contextBridge` no `preload.cjs` expondo só o necessário (hoje: nada); adicionar `<meta http-equiv="Content-Security-Policy">` no `index.html`.
-- **Por quê:** é a maior dívida de segurança do projeto (`docs/decisions.md` D3). Como nenhum componente usa API de Node hoje, a migração é de baixo risco.
-- **Toca em:** `main.cjs`, `preload.cjs`, `index.html`. Revisar se algum componente quebra (não deve).
+- **Por quê:** era a maior dívida de segurança do projeto (`docs/decisions.md` D3). Como nenhum componente usa API de Node (confirmado via grep em `src/`), a migração foi de baixo risco.
+- **Entregue:** `main.cjs` — `webPreferences` agora usa `nodeIntegration: false`, `contextIsolation: true`, `sandbox: true`. `preload.cjs` — removido o código morto de template (lia `process.versions` para elementos que não existem no `index.html`); hoje não expõe nada via `contextBridge`, só um comentário explicando o porquê. `index.html` — `<meta http-equiv="Content-Security-Policy">` restritiva (`default-src 'self'`, `script-src 'self'`, `style-src 'self' 'unsafe-inline'` — necessário por causa do uso extensivo de `style={{}}` inline nas tools, `object-src 'none'`, `form-action 'none'`, `connect-src` liberando `ws(s)://localhost:1234`/`http://localhost:1234` só para o HMR do Vite em dev).
+- **Validado:** testado manualmente com `electron .` apontando para `dist/` (produção, `file://`) e para o Vite dev server (`NODE_ENV=development`, HMR) capturando `console-message` do renderer — nenhuma violação de CSP em nenhum dos dois modos; app carrega e HMR conecta normalmente.
 
-### 2.5 Code-split das rotas · P
+### 2.5 Code-split das rotas · P · ✅ feito
 - **O quê:** `React.lazy` + `<Suspense>` por rota em `App.tsx`.
-- **Por quê:** bundle único de ~825 KB; cada tool vira um chunk sob demanda.
-- **Toca em:** `App.tsx`.
+- **Por quê:** bundle único de ~835 KB; cada tool vira um chunk sob demanda.
+- **Entregue:** as 15 tools agora são `lazy(() => import(...))`; `<Routes>` envolvidas por `<Suspense fallback={<RouteFallback />}>` (fallback simples com "Carregando...", inline, sem CSS novo) dentro do `<ErrorBoundary>` existente. `Sidebar`/`CommandPalette`/`ErrorBoundary` continuam import estático (sempre necessários, pequenos). Resultado: sem mais o aviso de chunk >500 KB; o bundle principal caiu de ~835 KB para ~238 KB, com libs pesadas de uma única tool isoladas em chunk próprio (`SqlFormatterTool` ~265 KB, `CronParserTool` ~184 KB, carregados só ao abrir essas rotas).
+- **Validado:** testado manualmente com `electron .` sob `file://` (produção) navegando entre várias rotas (inclusive `/sql`, o maior chunk) — screenshot confirmando o carregamento correto do chunk sob demanda, sem violação de CSP nem erro no console do renderer.
 
 ### 2.6 Extrair o "shell de ferramenta" e reduzir estilo inline · M
 - **O quê:** um `<ToolLayout title description>` + componentes de painel (`<PanelInput>`, `<PanelOutput>`) que hoje são copiados em quase todo `*Tool.tsx`; mover o `style={{}}` repetido para classes em `index.css`.

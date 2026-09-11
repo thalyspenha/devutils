@@ -12,8 +12,9 @@ function createWindow() {
     minHeight: 600,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
-      nodeIntegration: true,
-      contextIsolation: false, // For simpler MVP setup
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true,
     },
     // Frameless window can be tricky on some Linux DEs, we'll use standard window
     // titleBarStyle: 'hidden', // Works well on macOS, varies on Linux. We'll fallback to standard if needed.

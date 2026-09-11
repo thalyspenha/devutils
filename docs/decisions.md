@@ -26,12 +26,12 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 - **Evidência:** `vite.config.ts` mínimo (só `@vitejs/plugin-react`), sem `vite-plugin-electron` / `electron-vite`.
 - **Racional:** Não identificado. Inferência: manter o setup simples ("MVP").
 
-## D3 — `contextIsolation: false` + `nodeIntegration: true`
+## D3 — `contextIsolation: true` + `nodeIntegration: false` + CSP (revertido de D3 original)
 
-- **Decisão:** desabilitar o isolamento de contexto e habilitar Node no renderer.
-- **Evidência:** `app/main.cjs`, com o comentário `// For simpler MVP setup`.
-- **Racional:** simplicidade de MVP (declarado no comentário).
-- **Trade-off:** é a configuração **menos segura** do Electron. Como o app não carrega conteúdo remoto (só `localhost` em dev e `file://` em prod) e não há entrada não confiável executada como código, o risco prático é baixo — mas é uma dívida de segurança conhecida. O `preload.cjs` não usa `contextBridge`.
+- **Decisão:** endurecer o `webPreferences` do renderer (`contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`) e adicionar `Content-Security-Policy` no `index.html`.
+- **Evidência:** `app/main.cjs`, `app/preload.cjs`, `app/index.html`; item 2.4 do `docs/roadmap.md`.
+- **Racional:** a configuração original (`contextIsolation: false` + `nodeIntegration: true`, ver histórico deste arquivo) era a menos segura do Electron, declarada como MVP. Como nenhum componente do renderer usa API de Node (confirmado via grep em `src/` — sem `require`, `process.*`, `ipcRenderer`, etc.) e o app não carrega conteúdo remoto, a migração foi de baixo risco.
+- **Trade-off:** `preload.cjs` não expõe nenhuma API via `contextBridge` hoje (o app não usa IPC — ver seção 3 do `CLAUDE.md`). A CSP inclui `style-src 'self' 'unsafe-inline'` porque as tools usam `style={{}}` inline extensivamente (padrão do projeto, ver seção 5 do `CLAUDE.md`); apertar isso exigiria migrar para CSS/classes, fora de escopo aqui. `connect-src` libera `localhost:1234` (http/ws) só para o HMR do Vite em dev — inofensivo em produção (`file://`). Validado manualmente rodando `electron .` em prod e em dev (HMR), sem violações de CSP no console do renderer.
 
 ## D4 — `HashRouter` em vez de `BrowserRouter`
 
