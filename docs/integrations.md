@@ -14,6 +14,8 @@ O aplicativo é **offline-first**. Não há integração com serviços de tercei
 
 Nenhum componente usa `fetch`, `XMLHttpRequest`, WebSocket ou `axios`.
 
+Desde o endurecimento de segurança do Electron (ver `docs/decisions.md` D3), essa política de "zero rede" também é reforçada por uma `Content-Security-Policy` (`<meta http-equiv>` em `index.html`): `connect-src` só libera `localhost:1234` (http/ws), e mesmo assim só útil durante `npm run dev` (HMR do Vite) — em produção (`file://`) essa regra fica inerte.
+
 ## Integrações com o sistema operacional
 
 | Recurso | API | Uso |
@@ -21,7 +23,7 @@ Nenhum componente usa `fetch`, `XMLHttpRequest`, WebSocket ou `axios`.
 | Área de transferência (leitura) | `navigator.clipboard.readText()` | `useClipboardData(onData)` — retorna uma função `paste()` chamada pelo botão "Colar da área de transferência"; nunca lê sozinho no mount |
 | Área de transferência (escrita) | `navigator.clipboard.writeText()` | Botões "Copiar" |
 | Navegador padrão | Electron `shell.openExternal` | Abrir links fora da janela |
-| Download de arquivo | `<a download>` + `Blob` | Salvar QR Code como SVG (`QrCodeGeneratorTool`) |
+| Download de arquivo | `<a download>` + `Blob` (SVG) / `canvas.toDataURL` (PNG) | Salvar QR Code como SVG ou PNG (`QrCodeGeneratorTool`) |
 | Gerador de aleatoriedade do SO | Web Crypto (`crypto.getRandomValues`, `crypto.subtle`, `crypto.randomUUID`) | Senha, RSA, UUID |
 
 ## Bibliotecas que substituem integrações

@@ -18,7 +18,7 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 
 - **Decisão:** distribuir como app desktop Electron, não como web app ou PWA.
 - **Evidência:** `app/main.cjs`, `electron` + `electron-builder` nas deps, `main: main.cjs`.
-- **Racional:** Não identificado explicitamente. Inferência: acesso a clipboard/crypto com UX de app nativo e distribuição de binário. O nome exibido "DevUtils Linux" e `electron-builder -l` sugerem alvo Linux desktop.
+- **Racional:** Não identificado explicitamente. Inferência: acesso a clipboard/crypto com UX de app nativo e distribuição de binário. `electron-builder -l` (target `AppImage`) sugere alvo Linux desktop.
 
 ## D2 — Renderer React 19 + Vite, sem plugin de integração Electron
 
@@ -132,6 +132,21 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 - **Racional:** item 8 da lista de dívida técnica em `docs/roadmap.md` — ler o clipboard do sistema sem nenhuma ação do usuário é um comportamento discreto mas surpreendente do ponto de vista de privacidade/UX, mesmo sem enviar o dado pra fora da máquina.
 - **Consequência:** os filtros que antes decidiam se auto-colava (JSON precisa parsear, JWT precisa ter 3 partes, etc.) foram removidos — agora o botão sempre cola o texto bruto, e a validação normal de cada ferramenta mostra o erro se o conteúdo não servir (mesmo comportamento de digitar/colar manualmente com Ctrl+V). A detecção automática de Base64 no `Base64Tool` (troca pro modo decode) foi mantida, agora rodando no clique do botão.
 
+## D20 — Code-split das rotas (`React.lazy` + `Suspense`)
+
+- **Decisão:** cada componente-ferramenta passou a ser importado com `React.lazy(() => import(...))` em `App.tsx`; as `<Routes>` ficam dentro de `<Suspense fallback={<RouteFallback/>}>`, por sua vez dentro do `<ErrorBoundary>` já existente.
+- **Evidência:** `src/App.tsx`; item 2.5 do `docs/roadmap.md`.
+- **Racional:** o bundle de produção era um chunk único de ~835 KB (aviso do Vite: "chunk maior que 500 KB"). Boa parte do peso vinha de libs usadas por uma única tool (`sql-formatter` em `SqlFormatterTool`, `cronstrue` em `CronParserTool`). Com `React.lazy`, cada tool (e suas libs exclusivas) vira um chunk carregado só quando a rota é aberta.
+- **Consequência:** bundle principal caiu para ~238 KB; `SqlFormatterTool` (~265 KB) e `CronParserTool` (~184 KB) viraram chunks próprios. Validado manualmente com `electron .` sob `file://`, navegando por várias rotas (screenshot confirmando o carregamento do chunk sob demanda) — sem violação de CSP nem erro no console do renderer.
+
+## D21 — Extração de `ToolLayout`/`ToolPanel`
+
+- **Decisão:** dois componentes compartilhados em `src/components/`: `ToolLayout` (shell `.main-content` + `.tool-header`, título/descrição) e `ToolPanel` (painel `.glass-panel` com label + botões de ação opcionais). As 15 tools usam `ToolLayout`; as 5 com padrão de painel duplo input/output (`JsonFormatterTool`, `Base64Tool`, `BackslashEscapeTool`, `SqlFormatterTool`, `JwtDecoderTool`) também usam `ToolPanel`.
+- **Evidência:** `src/components/ToolLayout.tsx`, `src/components/ToolPanel.tsx`; item 2.6 do `docs/roadmap.md`.
+- **Racional:** as 15 tools tinham o mesmo cabeçalho (`.tool-header` com `<h2>`/`<p>`) copiado à mão, e 12 delas usavam o wrapper externo `h-full flex-col` (sem `flex-grow` explícito) contra 3 com `main-content` (que tem `flex:1` explícito) — inconsistência sem motivo. `ToolLayout` unificou o wrapper (agora todas usam `main-content`) e o cabeçalho. `ToolPanel` juntou o que seriam `<PanelInput>`/`<PanelOutput>` num componente só, já que a única diferença real entre os dois é o `readOnly` da textarea e o conjunto de botões — ambos resolvidos via `children`/`actions`, sem precisar de dois componentes.
+- **Trade-off:** as outras 10 tools (campo único ou múltiplos campos, sem par input/output) só adotaram `ToolLayout` — forçar `ToolPanel` nelas seria abstração sem motivo real (contra a seção 5 do `CLAUDE.md`). Nenhum CSS novo: os dois componentes reusam classes já existentes em `index.css` (`main-content`, `tool-header`, `glass-panel`, `flex-*`).
+- **Consequência:** `ToolLayout` não força um único `.tool-body` — `children` fica livre, o que permite o `JwtDecoderTool` (barra de abas entre o header e dois `.tool-body` condicionais) usar o mesmo componente sem gambiarra.
+
 ---
 
 ## Divergências entre decisão documentada e código
@@ -146,7 +161,7 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 ## Itens sem decisão documentada (Racional: Não identificado)
 
 - Escolha das versões de Electron 41 / Vite 8 / React 19.
-- Ausência de `contextBridge` / IPC.
-- Mistura de idiomas na UI (PT-BR e EN coexistem: "JSON Formatter"/"Format, validate…" vs. "Formatador de SQL"/"Formata queries…").
-- Nome do produto: `index.html` `<title>` = "DevUtils" (corrigido — era "Devtools"); Sidebar ainda = "DevUtils Linux"; `productName` do electron-builder = "DevUtils"; diretório = `devutils`. Sidebar e `<title>` agora batem; falta só unificar/remover o "Linux" da Sidebar (ver `docs/roadmap.md` 1.5).
-- Ausência de CI, Dockerfile, `engines`/`.nvmrc`.
+- Mistura de idiomas nos **títulos** (`<h2>`) das tools, que continuam em inglês ("JSON Formatter", "RegExp Tester", "Base64 Encoder/Decoder"…) para bater com o nome em `TOOLS[]`/Sidebar — decisão implícita ao resolver o item 1.5 do roadmap, nunca declarada explicitamente. O restante da UI (descrições, labels, botões, placeholders, mensagens de erro/estado) já é PT-BR em todas as 15 tools.
+- Ausência de CI e Dockerfile — avaliado e descartado deliberadamente (CI chegou a entrar no `docs/roadmap.md` como item 2.2 e foi removido a pedido: não considerado necessário para um app desktop de uso pessoal sem colaboradores).
+
+**Resolvidos** (constavam aqui antes): `contextBridge`/IPC — decisão registrada em D3/D21 (o app segue sem IPC, mas agora por escolha explícita de segurança, com `contextIsolation`/`sandbox` ligados, não por "MVP simples"); nome do produto — Sidebar, `<title>` e `productName` do electron-builder hoje batem, todos "DevUtils" (item 1.5 do roadmap); `engines`/`.node-version` — ver D18.

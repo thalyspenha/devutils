@@ -32,6 +32,14 @@ Evidências:
 
 O plano `docs/superpowers/plans/2026-07-14-sql-query-formatter.md` descreve um roteiro manual de verificação (rodar `npm run dev`, colar SQL, trocar dialeto, testar SQL inválido, testar botão copiar, conferir console do DevTools). É o padrão de QA do projeto.
 
+### 4. Verificação via `electron .` com captura de tela e log do console
+
+Usada em mudanças de maior risco (segurança do Electron/CSP, code-split de rotas, refatoração de layout): rodar `npx electron .` (dev ou apontando para `dist/`, com `--no-sandbox` quando o ambiente não suporta o sandbox do Chromium) escutando `webContents.on('console-message', …)` para capturar erros do renderer (violação de CSP, falha ao carregar chunk `lazy`, etc.) e usando `webContents.capturePage()` para tirar screenshot de rotas específicas e conferir visualmente o resultado. É um roteiro **temporário**: o código de captura/log é adicionado a `main.cjs` só durante a verificação e removido antes de finalizar a mudança — nunca fica commitado.
+
+## Vitest (`item 2.1` do roadmap — ainda não implementado)
+
+`docs/roadmap.md` item 2.1 propõe testes de unidade nas partes com lógica não-trivial (`CaseConverterTool`, `BackslashEscapeTool`, `JwtDecoderTool`, `UnixTimeConverterTool`, `RegExpTesterTool`). Nenhum trabalho foi feito ainda — ver o roadmap para escopo e critério de pronto.
+
 ## `app/test-forge.js` (removido)
 
 Existia um script Node ad-hoc (`app/test-forge.js`) que testava a lib `node-forge` para geração de par RSA + export PEM — resíduo de uma abordagem anterior ao `RsaGeneratorTool` atual, que usa `window.crypto.subtle` (WebCrypto). O script e a dependência `node-forge` (+ `@types/node-forge`) foram removidos por serem código/dependência morta, sem uso pelo app real. Ver `docs/dependencies.md` e `docs/decisions.md` (D7).

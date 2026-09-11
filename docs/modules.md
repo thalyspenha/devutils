@@ -1,24 +1,26 @@
 # Módulos
 
-> O projeto não tem "módulos" no sentido de backend/pacotes. Esta página lista as **unidades de código** existentes: processo Electron, bootstrap do renderer, navegação, command palette, error boundary, hooks compartilhados e os 15 componentes-ferramenta.
+> O projeto não tem "módulos" no sentido de backend/pacotes. Esta página lista as **unidades de código** existentes: processo Electron, bootstrap do renderer, navegação, command palette, error boundary, shell de ferramenta compartilhado (`ToolLayout`/`ToolPanel`), hooks compartilhados e os 15 componentes-ferramenta.
 
 ## Processo Electron
 
 | Arquivo | Responsabilidade |
 |---|---|
 | `app/main.cjs` | Processo principal. Cria a `BrowserWindow`, decide dev vs prod, redireciona links externos para o navegador do sistema, trata ciclo de vida do app. |
-| `app/preload.cjs` | Preload. Tenta preencher spans de versão no DOM (elementos inexistentes no HTML atual — efeito nulo). |
+| `app/preload.cjs` | Preload. Roda em contexto isolado (`contextIsolation: true`, `sandbox: true`); hoje não expõe nenhuma API ao renderer via `contextBridge` (o app não usa IPC). |
 
 ## Renderer — núcleo
 
 | Arquivo | Responsabilidade |
 |---|---|
 | `app/src/main.tsx` | Monta `<App/>` em `#root` via `createRoot`, dentro de `<StrictMode>`. |
-| `app/src/App.tsx` | Define `<HashRouter>`, renderiza `<Sidebar/>`, `<CommandPalette/>` e `<ToolRoutes/>`. `ToolRoutes` envolve as 15 `<Route>` num `<ErrorBoundary resetKey={location.pathname}>`. Importa todos os componentes-ferramenta estaticamente. |
-| `app/src/tools.ts` | Fonte única da lista de ferramentas: array `TOOLS` (`id`, `name`, `icon` do `lucide-react`, `path`) + interface `Tool`. Consumido por `Sidebar` e `CommandPalette`. |
-| `app/src/components/Sidebar.tsx` | Navegação lateral. Itera `TOOLS` (de `src/tools.ts`) com `<NavLink>`. Cabeçalho fixo "DevUtils Linux". |
+| `app/src/App.tsx` | Define `<HashRouter>`, renderiza `<Sidebar/>`, `<CommandPalette/>` e `<ToolRoutes/>`. `ToolRoutes` envolve as 15 `<Route>` num `<ErrorBoundary resetKey={location.pathname}>` + `<Suspense fallback={<RouteFallback/>}>`. Cada componente-ferramenta é `React.lazy(() => import(...))` — code-split por rota, chunk carregado sob demanda. |
+| `app/src/tools.ts` | Fonte única da lista de ferramentas: array `TOOLS` (`id`, `name`, `icon` do `lucide-react`, `path`), ordenado alfabeticamente por `name` + interface `Tool`. Consumido por `Sidebar` e `CommandPalette`. |
+| `app/src/components/Sidebar.tsx` | Navegação lateral. Itera `TOOLS` (de `src/tools.ts`) com `<NavLink>`. Cabeçalho fixo "DevUtils" (igual ao `<title>` e ao `productName` do electron-builder). |
 | `app/src/components/CommandPalette.tsx` | Overlay de busca de ferramentas (atalho `Ctrl`/`Cmd`+`K`, listener global em `window`). Match fuzzy inline sobre `tool.name` (bônus para caracteres consecutivos / início de palavra), lista derivada em `useMemo`. Navegação por teclado (`↑`/`↓`/`Enter`/`Esc`), fecha ao clicar fora. `useNavigate` para ir à rota. |
-| `app/src/components/ErrorBoundary.tsx` | Class component. Captura erros de render de qualquer ferramenta (`getDerivedStateFromError`) e mostra uma tela de recuperação (`.error-boundary`) com a mensagem + botão "Tentar de novo", em vez de tela branca. Reseta sozinho quando `resetKey` muda (troca de rota). |
+| `app/src/components/ErrorBoundary.tsx` | Class component. Captura erros de render de qualquer ferramenta (`getDerivedStateFromError`) — inclusive falha ao carregar o chunk `lazy` de uma tool — e mostra uma tela de recuperação (`.error-boundary`) com a mensagem + botão "Tentar de novo", em vez de tela branca. Reseta sozinho quando `resetKey` muda (troca de rota). |
+| `app/src/components/ToolLayout.tsx` | Shell padrão de uma ferramenta: `<div className="main-content">` + `.tool-header` (título/descrição). `children` fica livre para ter 1+ `.tool-body` — necessário pro `JwtDecoderTool`, que tem uma barra de abas entre o header e dois `.tool-body` condicionais. Usado pelas 15 tools. |
+| `app/src/components/ToolPanel.tsx` | Painel `.glass-panel` com um label (e, opcionalmente, botões de ação alinhados à direita). Reúne o que seriam `<PanelInput>`/`<PanelOutput>` num componente só — a diferença entre os dois é só o `readOnly` da textarea e o conjunto de botões, resolvidos via `children`/`actions`. Usado em `JsonFormatterTool`, `Base64Tool`, `BackslashEscapeTool`, `SqlFormatterTool` e `JwtDecoderTool` (painéis "Encoded JWT"/"Header"/"Payload"). |
 | `app/src/index.css` | Único stylesheet global. Variáveis de tema (dark fixo), classes utilitárias, componentes de layout (`.sidebar`, `.tool-header`, `.tool-body`, `.glass-panel`, `.command-palette`, `.error-boundary`). |
 
 | `app/src/hooks/useClipboardData.ts` | Hook `useClipboardData(onData)`. Retorna uma função `paste()` que lê o clipboard via `navigator.clipboard.readText()` **só quando chamada** (nunca sozinha no mount) e passa o texto para `onData`. Falha silenciosa (`console.warn`) se sem permissão. |
@@ -44,7 +46,7 @@ Todos em `app/src/components/`. Colunas: rota, bibliotecas externas além de Rea
 | `UnixTimeConverterTool` | `/unix-time` | — | Relógio Unix ao vivo (`setInterval` 1s). Timestamp→data (heurística: `>1e12` = ms, senão s; local + UTC). Data→timestamp (`datetime-local`, reativo; init em hora local). | `currentUnix`, `unixInput`, `dateOutput`, `unixError`, `dateInput` (+ `unixOutput` via `useMemo`) |
 | `RegExpTesterTool` | `/regexp` | — | Testa regex ao vivo (`new RegExp(pattern, flags)`). Destaca matches no texto, lista matches + capture groups (limite de exibição: 50). Guarda contra loop de match zero-width. | `pattern`, `flags`, `testString` (+ `matchResult`/`error` via `useMemo`) |
 | `CronParserTool` | `/cron` | `cronstrue/i18n` | Traduz expressão cron para texto em `pt_BR`. Cálculo síncrono no render (sem `useState` de output). Lista de exemplos estática. | `expression` |
-| `QrCodeGeneratorTool` | `/qrcode` | `qrcode.react` (`QRCodeSVG`) | Gera QR em SVG (nível de correção `L`). Controles: texto, tamanho (128–512, step 16), cor de código, cor de fundo. Botão baixa o SVG via `Blob` + `<a download>`. | `text`, `size`, `fgColor`, `bgColor` |
+| `QrCodeGeneratorTool` | `/qrcode` | `qrcode.react` (`QRCodeSVG`, `QRCodeCanvas`) | Gera QR em SVG (nível de correção `L`, `marginSize={0}`). Controles: texto, tamanho (128–512, step 16), cor de código, cor de fundo. Baixa **SVG** (`Blob` + `<a download>`) e **PNG** (via `QRCodeCanvas` oculto + `canvas.toDataURL`, mesmos props do SVG visível). | `text`, `size`, `fgColor`, `bgColor` |
 | `UuidGeneratorTool` | `/uuid` | — | Gera UUID v4 via `crypto.randomUUID()`. Opções: quantidade (1–1000, sanitizada), maiúsculas, sem hífens. Copiar todos. | `uuids[]`, `count`, `uppercase`, `noHyphens` |
 | `PasswordGeneratorTool` | `/password` | — | Gera senha com `window.crypto.getRandomValues` (`Uint32Array`, módulo sobre o charset). Opções: tamanho (4–64), maiúsc./minúsc./números/símbolos. Regenera a cada mudança de opção. | `password`, `length`, 4× flags de charset |
 | `RsaGeneratorTool` | `/rsa` | — (WebCrypto) | Gera par RSA via `window.crypto.subtle.generateKey({name:'RSA-OAEP', hash:'SHA-256'}, …, ['encrypt','decrypt'])`. Exporta SPKI/PKCS8 → PEM manual (base64 + wrap 64). Tamanhos: 2048/4096. Erro exibido inline (não mais `alert()`). | `keySize`, `publicKey`, `privateKey`, `isGenerating`, `error` |

@@ -9,7 +9,7 @@
 | `@fontsource/inter` | `^5.3.0` | `src/main.tsx` | Fonte **Inter** empacotada (subset `latin`, pesos 400/500/600/700). Substitui o `@import` do Google Fonts — app 100% offline. |
 | `react` | `^19.2.4` | todo o renderer | Biblioteca de UI |
 | `react-dom` | `^19.2.4` | `main.tsx` | Renderização no DOM (`createRoot`) |
-| `react-router-dom` | `^7.13.1` | `App.tsx`, `Sidebar.tsx` | Roteamento client-side (`HashRouter`, `Routes`, `Route`, `NavLink`) |
+| `react-router-dom` | `^7.18.3` | `App.tsx`, `Sidebar.tsx` | Roteamento client-side (`HashRouter`, `Routes`, `Route`, `NavLink`) |
 | `lucide-react` | `^0.577.0` | `Sidebar.tsx` e várias ferramentas | Ícones SVG (`Copy`, `Trash2`, `Database`, `AlertCircle`, …) |
 | `crypto-js` | `^4.2.0` | `HashGeneratorTool`, `JwtDecoderTool` | MD5/SHA-1/SHA-256/SHA-512 e `HmacSHA256` (assinatura HS256 do JWT) |
 | `cronstrue` | `^3.14.0` | `CronParserTool` (`cronstrue/i18n`) | Traduz expressão cron → texto (`locale: 'pt_BR'`) |
@@ -51,13 +51,11 @@
 | `@types/react` | `^19.2.14` | Tipos React |
 | `@types/react-dom` | `^19.2.3` | Tipos ReactDOM |
 | `@types/crypto-js` | `^4.2.2` | Tipos para `crypto-js` (a lib não é tipada) |
-| `@types/diff` | `^7.0.2` | Tipos para `diff`. Nota: `diff` v9 já embute tipos próprios — este pacote pode ser redundante. |
-| `@types/qrcode.react` | `^1.0.5` | Pacote de tipos da **v1** de `qrcode.react`. A dependência instalada é **v4**, que traz tipos próprios. Provavelmente redundante/incorreto. |
 
 ## Observações gerais
 
 - **Lockfile:** `app/package-lock.json` (npm, `lockfileVersion: 3`). O `package-lock.json` da raiz é um stub vazio.
 - **Sem `overrides`, `resolutions` ou `peerDependencies`** declaradas.
 - **Sem dependências nativas** (todas as libs são JS puro), o que simplifica o empacotamento com electron-builder.
-- **Pacotes possivelmente desnecessários:** `@types/qrcode.react` (tipos da v1 para uma lib na v4) e possivelmente `@types/diff`. (`node-forge` e `@types/node-forge` já foram removidos — eram dependência morta, usada só pelo extinto `app/test-forge.js`.)
+- **Dependências mortas removidas:** `node-forge`, `@types/node-forge` (usadas só pelo extinto `app/test-forge.js`), `@types/diff` e `@types/qrcode.react` (tipos da v1 de uma lib hoje na v4) — `diff` v9 e `qrcode.react` v4 já publicam seus próprios tipos (`types` no `package.json` de cada lib), então os pacotes `@types/*` eram redundantes. Ver `docs/roadmap.md` item 2.3.
 - **Versões pré-lançamento aparente:** `vite ^8.0.0`, `electron ^41`, `react ^19.2` — versões altas; compatibilidade não verificada em execução neste ambiente de análise (sem `node_modules`).

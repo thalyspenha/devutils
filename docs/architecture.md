@@ -1,6 +1,6 @@
 # Arquitetura
 
-> Documento baseado no código em `main` (último commit analisado: `33696b2`).
+> Documento atualizado a mão para refletir o estado do código em 2026-09-11 (segurança do Electron, code-split de rotas, `ToolLayout`/`ToolPanel`).
 > O que não pôde ser determinado pelo código está marcado como **Não identificado**.
 
 ## Visão geral
@@ -18,7 +18,9 @@ Todo o processamento das ferramentas acontece **localmente no renderer** (no nav
 │ Electron (app/main.cjs)                                      │
 │  - app.whenReady() → createWindow()                          │
 │  - BrowserWindow 1000x700 (min 800x600), autoHideMenuBar     │
-│  - webPreferences: nodeIntegration:true, contextIsolation:false│
+│  - webPreferences: nodeIntegration:false, contextIsolation:true,│
+│    sandbox:true                                               │
+│  - CSP via <meta> em index.html (default-src 'self', etc.)    │
 │  - setWindowOpenHandler → shell.openExternal (links externos) │
 │                                                             │
 │  dev  → loadURL('http://localhost:1234')                     │
@@ -31,6 +33,8 @@ Todo o processamento das ferramentas acontece **localmente no renderer** (no nav
 │   │     ├── <Sidebar/>  (nav fixa, itera TOOLS de tools.ts)│ │
 │   │     ├── <CommandPalette/>  (Ctrl/Cmd+K, busca fuzzy)   │ │
 │   │     └── <Routes>  15 rotas → 1 componente-ferramenta   │ │
+│   │         (cada componente é React.lazy, dentro de       │ │
+│   │          <Suspense>, dentro do <ErrorBoundary>)         │ │
 │   │                                                       │ │
 │   │  Estado: useState/useEffect/useMemo por componente     │ │
 │   │  Hook compartilhado: useClipboardData                  │ │
@@ -45,8 +49,10 @@ Todo o processamento das ferramentas acontece **localmente no renderer** (no nav
 - Cria uma única `BrowserWindow` (1000×700, mínimo 800×600), com `autoHideMenuBar: true` e `backgroundColor: '#0f172a'`.
 - `webPreferences`:
   - `preload: app/preload.cjs`
-  - `nodeIntegration: true`
-  - `contextIsolation: false` — comentado no código como *"For simpler MVP setup"*.
+  - `nodeIntegration: false`
+  - `contextIsolation: true`
+  - `sandbox: true`
+- `index.html` define uma `Content-Security-Policy` restritiva via `<meta http-equiv>` (`default-src 'self'`, `object-src 'none'`, `form-action 'none'`; `style-src` inclui `'unsafe-inline'` por causa do uso extensivo de `style={{}}` inline nas tools; `connect-src` libera `localhost:1234` — http/ws — só para o HMR do Vite em dev).
 - `setWindowOpenHandler`: qualquer `window.open` / link externo é aberto no navegador do sistema via `shell.openExternal` e negado dentro da janela.
 - Ciclo de vida:
   - `activate` (macOS) recria a janela se não houver nenhuma.
@@ -55,7 +61,7 @@ Todo o processamento das ferramentas acontece **localmente no renderer** (no nav
 
 ## Preload (`app/preload.cjs`)
 
-Script mínimo. No `DOMContentLoaded`, tenta preencher elementos com id `chrome-version` / `node-version` / `electron-version` a partir de `process.versions`. **Esses elementos não existem no `index.html` atual**, portanto o preload é efetivamente inócuo. Não usa `contextBridge`.
+Script mínimo — hoje é só um comentário. Com `contextIsolation: true` + `sandbox: true`, não expõe nenhuma API ao renderer via `contextBridge` (o app não usa IPC — ver seção 3 do `CLAUDE.md`). Antes rodava com `nodeIntegration: true`/`contextIsolation: false` e tentava preencher elementos com id `chrome-version`/`node-version`/`electron-version` a partir de `process.versions`; esses elementos nunca existiram no `index.html`, então esse código era efetivamente morto e foi removido junto do endurecimento de segurança (ver `docs/decisions.md` D3).
 
 ## Renderer
 
@@ -70,15 +76,16 @@ Script mínimo. No `DOMContentLoaded`, tenta preencher elementos com id `chrome-
 - Uso de hash routing é coerente com o carregamento via `file://` em produção (`loadFile`), onde history routing quebraria.
 - 15 rotas mapeando 1:1 para um componente-ferramenta (ver `docs/api.md` e `docs/modules.md`).
 - A rota `/` renderiza `JsonFormatterTool` (ferramenta padrão).
-- **Não há** rota 404 / fallback, nem lazy loading (todos os componentes são importados estaticamente).
+- Cada componente-ferramenta é importado com `React.lazy(() => import(...))` e as `<Routes>` ficam dentro de um `<Suspense fallback={<RouteFallback />}>` (fallback simples "Carregando...", inline). Resultado: o bundle deixou de ser um chunk único de ~835 KB — cada tool (e as libs pesadas usadas só por uma tool, como `sql-formatter` e `cronstrue`) vira um chunk próprio, carregado sob demanda ao abrir a rota.
+- **Não há** rota 404 / fallback de navegação (só o fallback de carregamento do `Suspense`).
 - `<CommandPalette/>` (irmão de `<Sidebar/>`, dentro do `HashRouter`) abre com `Ctrl`/`Cmd`+`K` e navega via `useNavigate`.
-- As rotas ficam dentro de um `<ErrorBoundary>` (wrapper `ToolRoutes` em `App.tsx`): um erro de render numa ferramenta mostra uma tela de recuperação em vez de derrubar o app. O boundary reseta ao trocar de rota (`resetKey={location.pathname}`).
+- As rotas ficam dentro de um `<ErrorBoundary>` (wrapper `ToolRoutes` em `App.tsx`), que também envolve o `<Suspense>`: um erro de render numa ferramenta (ou falha ao carregar o chunk lazy) mostra uma tela de recuperação em vez de derrubar o app. O boundary reseta ao trocar de rota (`resetKey={location.pathname}`).
 
 ### Layout
 
 - `Sidebar` (largura fixa 260px) + `main-content` flexível.
-- `Sidebar` itera o array `TOOLS` de `app/src/tools.ts` (id, name, icon `lucide-react`, path) com `<NavLink>`. O mesmo array alimenta a `CommandPalette`.
-- Cada ferramenta segue o padrão visual: `.tool-header` (título + descrição) + `.tool-body` (conteúdo).
+- `Sidebar` itera o array `TOOLS` de `app/src/tools.ts` (id, name, icon `lucide-react`, path — ordenado alfabeticamente por `name`) com `<NavLink>`. O mesmo array alimenta a `CommandPalette`.
+- Cada ferramenta segue o padrão visual: `.tool-header` (título + descrição) + `.tool-body` (conteúdo), hoje encapsulado no componente compartilhado `<ToolLayout title description>` (`src/components/ToolLayout.tsx`). Onde o padrão de painel duplo input/output se repete (JSON, Base64, Backslash, SQL, JWT), as tools também usam `<ToolPanel label actions?>` (`src/components/ToolPanel.tsx`) — um `glass-panel` com label e botões de ação opcionais.
 
 ### Estado e fluxo de dados
 
@@ -142,10 +149,14 @@ devutils/
         ├── tools.ts            # array TOOLS + interface Tool (Sidebar + CommandPalette)
         ├── assets/             # hero.png, vite.svg (não referenciados no código)
         ├── hooks/
-        │   └── useClipboardData.ts
+        │   ├── useClipboardData.ts
+        │   └── useCopy.ts
         └── components/
             ├── Sidebar.tsx
             ├── CommandPalette.tsx
+            ├── ErrorBoundary.tsx
+            ├── ToolLayout.tsx   # shell `.main-content` + `.tool-header`, usado pelas 15 tools
+            ├── ToolPanel.tsx    # painel glass-panel com label + ações, usado onde há par input/output
             └── *Tool.tsx        # 15 componentes-ferramenta
 ```
 
@@ -156,6 +167,8 @@ devutils/
 - **Component-per-feature**: cada utilitário é um componente React autocontido em `src/components/`, registrado em dois lugares (`App.tsx` rota + `src/tools.ts` item, que alimenta `Sidebar` e `CommandPalette`).
 - **Lógica inline no componente** — sem camada de serviços/domínio; bibliotecas prontas (`crypto-js`, `cronstrue`, `sql-formatter`, `diff`, `qrcode.react`) fazem o trabalho pesado.
 - **Derivação de estado** via `useEffect`/`useMemo` a cada mudança de input (formatação "ao vivo", sem botão "processar" na maioria das ferramentas).
+- **Shell de ferramenta compartilhado**: `ToolLayout`/`ToolPanel` (`src/components/`) extraem a estrutura visual repetida (cabeçalho, painel input/output) sem introduzir CSS novo — reusam as classes já existentes em `index.css`.
+- **Code-split por rota**: cada componente-ferramenta é `React.lazy`, então o bundle principal só carrega a tool ativa (ver seção Roteamento).
 
 ## O que não se aplica / não foi identificado
 

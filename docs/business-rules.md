@@ -9,20 +9,20 @@
 - **Formatação "ao vivo".** A maioria das ferramentas recalcula o output a cada tecla (derivado com `useMemo`), sem botão "processar". Exceções com ação explícita: `UuidGenerator` ("Gerar"), `PasswordGenerator` ("Gerar Outra Senha"), `RsaGenerator` ("Gerar Chaves"), `JwtDecoder` aba Gerar ("Gerar JWT"), `UnixTime` timestamp→data ("Convert").
 - **Erros não destroem o input.** Entrada inválida mostra mensagem de erro e zera o output, mas mantém o que o usuário digitou.
 - **Tema dark fixo.** Não há troca de tema.
-- **Textos de UI misturam PT-BR e EN** (ver `docs/decisions.md`).
+- **Textos de UI majoritariamente PT-BR.** Descrições, labels, botões, placeholders e mensagens de erro/estado são PT-BR nas 15 tools; só os **títulos** (`<h2>`) continuam em inglês, para bater com o nome em `TOOLS[]`/Sidebar (ex.: "JSON Formatter", "RegExp Tester") — ver `docs/decisions.md`.
 
 ## JSON Formatter (`/`)
 
 - Válido → `JSON.stringify(JSON.parse(input), null, 2)` (indent de 2 espaços).
 - **Correção automática de backslash**: se o `JSON.parse` falhar, tenta uma vez trocar `\` não seguido de `["\/bfnrtu]` por `\\` (caso de paths Windows tipo `C:\Users\...`) e reparsear. Só então considera inválido.
 - Botão "Colar" cola o conteúdo do clipboard no input sem filtro; a validação de JSON acontece depois, como qualquer outra entrada.
-- Status visual: "Waiting for input" / "Valid JSON" / "Invalid JSON".
+- Status visual: "Aguardando entrada..." / "JSON válido" / "JSON inválido".
 
 ## Base64 (`/base64`)
 
 - Encode: `btoa(unescape(encodeURIComponent(text)))` (suporta UTF-8).
 - Decode: `decodeURIComponent(escape(atob(text)))`.
-- Entrada inválida para o modo atual → erro "Invalid input for encode/decode".
+- Entrada inválida para o modo atual → erro "Entrada inválida para codificação/decodificação".
 - Auto-detecção: ao clicar em "Colar", se o texto casar com a regex de Base64 (`^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$`), muda automaticamente para o modo **decode**.
 - Botão de swap: troca input↔output **e** inverte o modo.
 
@@ -47,8 +47,8 @@
 ## Unix Time Converter (`/unix-time`)
 
 - Relógio ao vivo em segundos, atualizado a cada 1s.
-- **Timestamp → data**: heurística — valor `> 1e12` é tratado como **milissegundos**, senão como **segundos**. Saída: horário local (`toLocaleString`) e UTC (`toUTCString`). Valor fora de faixa → "Invalid timestamp value out of range."
-- Entrada não numérica → "Invalid number format."
+- **Timestamp → data**: heurística — valor `> 1e12` é tratado como **milissegundos**, senão como **segundos**. Saída: horário local (`toLocaleString`) e UTC (`toUTCString`). Valor fora de faixa → "Valor de timestamp fora do intervalo válido."
+- Entrada não numérica → "Formato de número inválido."
 - **Data → timestamp**: `datetime-local` interpretado como **horário local**; saída em **segundos** (`Math.floor(ms/1000)`). Reativo (sem botão), derivado com `useMemo`. Valor inicial do campo = agora em horário local.
 
 ## RegExp Tester (`/regexp`)
