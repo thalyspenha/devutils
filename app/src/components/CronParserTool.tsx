@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import cronstrue from 'cronstrue/i18n';
+import { ToolLayout } from './ToolLayout';
 
 export function CronParserTool() {
   const [expression, setExpression] = useState('0 0 * * *');
@@ -16,12 +17,7 @@ export function CronParserTool() {
   }
 
   return (
-    <div className="h-full flex-col">
-      <div className="tool-header">
-        <h2>Cron Parser</h2>
-        <p>Traduz expressões Cron para texto legível.</p>
-      </div>
-      
+    <ToolLayout title="Cron Parser" description="Traduz expressões Cron para texto legível.">
       <div className="tool-body">
         <div className="flex-col" style={{ gap: '16px', maxWidth: '600px' }}>
           <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -69,6 +65,6 @@ export function CronParserTool() {
           </div>
         </div>
       </div>
-    </div>
+    </ToolLayout>
   );
 }

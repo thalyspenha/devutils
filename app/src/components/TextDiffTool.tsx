@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import * as Diff from 'diff';
+import { ToolLayout } from './ToolLayout';
 
 export function TextDiffTool() {
   const [original, setOriginal] = useState('');
@@ -11,12 +12,7 @@ export function TextDiffTool() {
   }, [original, modified]);
 
   return (
-    <div className="h-full flex-col">
-      <div className="tool-header">
-        <h2>Text Diff (Comparador)</h2>
-        <p>Comparar dois blocos de código ou texto para ver o que mudou.</p>
-      </div>
-
+    <ToolLayout title="Text Diff (Comparador)" description="Comparar dois blocos de código ou texto para ver o que mudou.">
       <div className="tool-body">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: '100%' }}>
           
@@ -78,6 +74,6 @@ export function TextDiffTool() {
 
         </div>
       </div>
-    </div>
+    </ToolLayout>
   );
 }

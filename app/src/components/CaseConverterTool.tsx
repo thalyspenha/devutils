@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useCopy } from '../hooks/useCopy';
+import { ToolLayout } from './ToolLayout';
 
 type CaseType = 'camelCase' | 'snake_case' | 'PascalCase' | 'kebab-case' | 'UPPERCASE' | 'lowercase' | 'CONSTANT_CASE';
 
@@ -55,12 +56,7 @@ export function CaseConverterTool() {
   );
 
   return (
-    <div className="h-full flex-col">
-      <div className="tool-header">
-        <h2>Case Converter</h2>
-        <p>Mudar texto para camelCase, snake_case, PascalCase, UPPERCASE, etc.</p>
-      </div>
-
+    <ToolLayout title="Case Converter" description="Mudar texto para camelCase, snake_case, PascalCase, UPPERCASE, etc.">
       <div className="tool-body">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '800px' }}>
 
@@ -106,6 +102,6 @@ export function CaseConverterTool() {
 
         </div>
       </div>
-    </div>
+    </ToolLayout>
   );
 }

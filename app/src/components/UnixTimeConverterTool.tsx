@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { ToolLayout } from './ToolLayout';
 
 export function UnixTimeConverterTool() {
   const [currentUnix, setCurrentUnix] = useState(() => Math.floor(Date.now() / 1000));
@@ -60,12 +61,7 @@ export function UnixTimeConverterTool() {
   }, [dateInput]);
 
   return (
-    <div className="flex-col h-full">
-      <div className="tool-header">
-        <h2>Unix Time Converter</h2>
-        <p>Converta timestamps Unix para datas legíveis e vice-versa</p>
-      </div>
-      
+    <ToolLayout title="Unix Time Converter" description="Converta timestamps Unix para datas legíveis e vice-versa">
       <div className="tool-body">
         
         {/* Current Time Widget */}
@@ -129,6 +125,6 @@ export function UnixTimeConverterTool() {
           )}
         </div>
       </div>
-    </div>
+    </ToolLayout>
   );
 }

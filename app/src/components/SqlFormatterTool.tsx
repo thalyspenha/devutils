@@ -3,6 +3,8 @@ import { Copy, Check, Trash2, ClipboardPaste } from 'lucide-react';
 import { format } from 'sql-formatter';
 import { useClipboardData } from '../hooks/useClipboardData';
 import { useCopy } from '../hooks/useCopy';
+import { ToolLayout } from './ToolLayout';
+import { ToolPanel } from './ToolPanel';
 
 type Dialect = 'sql' | 'mysql' | 'postgresql' | 'mariadb';
 
@@ -40,12 +42,7 @@ export function SqlFormatterTool() {
   };
 
   return (
-    <div className="main-content">
-      <div className="tool-header">
-        <h2>Formatador de SQL</h2>
-        <p>Formata queries SQL com indentação e quebra de linha.</p>
-      </div>
-
+    <ToolLayout title="Formatador de SQL" description="Formata queries SQL com indentação e quebra de linha.">
       <div className="tool-body">
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '16px' }}>
           <label style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-secondary)' }}>Dialeto:</label>
@@ -67,32 +64,34 @@ export function SqlFormatterTool() {
         </div>
 
         <div className="flex-1 flex gap-4" style={{ gap: '16px' }}>
-          <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
-            <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
-              <span style={{ fontWeight: 500 }}>Input</span>
-              <div style={{ display: 'flex', gap: '6px' }}>
+          <ToolPanel
+            label="Input"
+            actions={
+              <>
                 <button className="secondary" style={{ padding: '6px' }} onClick={pasteFromClipboard} title="Colar da área de transferência">
                   <ClipboardPaste size={16} />
                 </button>
                 <button className="secondary" style={{ padding: '6px' }} onClick={handleClear} title="Limpar">
                   <Trash2 size={16} />
                 </button>
-              </div>
-            </div>
+              </>
+            }
+          >
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Cole a query SQL aqui..."
             />
-          </div>
+          </ToolPanel>
 
-          <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
-            <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
-              <span style={{ fontWeight: 500 }}>Output</span>
+          <ToolPanel
+            label="Output"
+            actions={
               <button className="secondary" style={{ padding: '6px' }} onClick={() => copy(output)} title={copied ? 'Copiado!' : 'Copiar'}>
                 {copied ? <Check size={16} color="var(--success-color)" /> : <Copy size={16} />}
               </button>
-            </div>
+            }
+          >
             {error ? (
               <div style={{ color: 'var(--error-color)', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>
                 {error}
@@ -104,9 +103,9 @@ export function SqlFormatterTool() {
                 placeholder="SQL formatado aparece aqui..."
               />
             )}
-          </div>
+          </ToolPanel>
         </div>
       </div>
-    </div>
+    </ToolLayout>
   );
 }

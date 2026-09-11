@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { useCopy } from '../hooks/useCopy';
+import { ToolLayout } from './ToolLayout';
 
 export function RsaGeneratorTool() {
   const [keySize, setKeySize] = useState<number>(2048);
@@ -58,12 +59,10 @@ export function RsaGeneratorTool() {
   };
 
   return (
-    <div className="h-full flex-col">
-      <div className="tool-header">
-        <h2>RSA Key Pair Generator</h2>
-        <p>Gerar chaves públicas e privadas temporárias para testes de criptografia. Uso: <strong>RSA-OAEP</strong> (criptografar/descriptografar) — não servem para assinatura digital.</p>
-      </div>
-
+    <ToolLayout
+      title="RSA Key Pair Generator"
+      description={<>Gerar chaves públicas e privadas temporárias para testes de criptografia. Uso: <strong>RSA-OAEP</strong> (criptografar/descriptografar) — não servem para assinatura digital.</>}
+    >
       <div className="tool-body">
          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
@@ -126,6 +125,6 @@ export function RsaGeneratorTool() {
 
          </div>
       </div>
-    </div>
+    </ToolLayout>
   );
 }

@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { ArrowLeftRight, Trash2, Copy, Check, ClipboardPaste } from 'lucide-react';
 import { useClipboardData } from '../hooks/useClipboardData';
 import { useCopy } from '../hooks/useCopy';
+import { ToolLayout } from './ToolLayout';
+import { ToolPanel } from './ToolPanel';
 
 const ESCAPE_MAP: Record<string, string> = {
   '\\': '\\\\',
@@ -56,12 +58,7 @@ export function BackslashEscapeTool() {
   const handleClear = () => setInput('');
 
   return (
-    <div className="main-content">
-      <div className="tool-header">
-        <h2>Backslash Escape / Unescape</h2>
-        <p>Escape ou remova o escape de sequências de barra invertida como \n, \t, \\, \" e outras.</p>
-      </div>
-
+    <ToolLayout title="Backslash Escape / Unescape" description={'Escape ou remova o escape de sequências de barra invertida como \\n, \\t, \\\\, \\" e outras.'}>
       <div className="tool-body">
         <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
           <button
@@ -79,24 +76,25 @@ export function BackslashEscapeTool() {
         </div>
 
         <div className="flex-1 flex gap-4" style={{ gap: '16px' }}>
-          <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
-            <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
-              <span style={{ fontWeight: 500 }}>Entrada</span>
-              <div style={{ display: 'flex', gap: '6px' }}>
+          <ToolPanel
+            label="Entrada"
+            actions={
+              <>
                 <button className="secondary" style={{ padding: '6px' }} onClick={pasteFromClipboard} title="Colar da área de transferência">
                   <ClipboardPaste size={16} />
                 </button>
                 <button className="secondary" style={{ padding: '6px' }} onClick={handleClear} title="Limpar">
                   <Trash2 size={16} />
                 </button>
-              </div>
-            </div>
+              </>
+            }
+          >
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={mode === 'escape' ? 'Cole o texto para escapar...' : 'Cole o texto escapado para remover o escape...'}
             />
-          </div>
+          </ToolPanel>
 
           <div className="flex items-center justify-center">
             <button
@@ -109,19 +107,20 @@ export function BackslashEscapeTool() {
             </button>
           </div>
 
-          <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
-            <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
-              <span style={{ fontWeight: 500 }}>Saída</span>
+          <ToolPanel
+            label="Saída"
+            actions={
               <button className="secondary" style={{ padding: '6px' }} onClick={() => copy(output)} title={copied ? 'Copiado!' : 'Copiar'}>
                 {copied ? <Check size={16} color="var(--success-color)" /> : <Copy size={16} />}
               </button>
-            </div>
+            }
+          >
             <textarea
               value={output}
               readOnly
               placeholder="O resultado aparecerá aqui..."
             />
-          </div>
+          </ToolPanel>
         </div>
 
         <div className="glass-panel" style={{ padding: '16px' }}>
@@ -159,6 +158,6 @@ export function BackslashEscapeTool() {
           </div>
         </div>
       </div>
-    </div>
+    </ToolLayout>
   );
 }

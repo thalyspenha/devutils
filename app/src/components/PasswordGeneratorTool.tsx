@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useCopy } from '../hooks/useCopy';
+import { ToolLayout } from './ToolLayout';
 
 export function PasswordGeneratorTool() {
   const [password, setPassword] = useState('');
@@ -38,12 +39,7 @@ export function PasswordGeneratorTool() {
   }, [length, includeUppercase, includeLowercase, includeNumbers, includeSymbols]);
 
   return (
-    <div className="h-full flex-col">
-       <div className="tool-header">
-        <h2>Gerador de Senha Forte</h2>
-        <p>Crie senhas seguras com diversas configurações de caracteres.</p>
-      </div>
-
+    <ToolLayout title="Gerador de Senha Forte" description="Crie senhas seguras com diversas configurações de caracteres.">
       <div className="tool-body">
         <div className="glass-panel" style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '600px' }}>
           
@@ -107,6 +103,6 @@ export function PasswordGeneratorTool() {
 
         </div>
       </div>
-    </div>
+    </ToolLayout>
   );
 }

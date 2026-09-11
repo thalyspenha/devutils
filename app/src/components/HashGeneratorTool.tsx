@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import CryptoJS from 'crypto-js';
 import { useCopy } from '../hooks/useCopy';
+import { ToolLayout } from './ToolLayout';
 
 export function HashGeneratorTool() {
   const [input, setInput] = useState('');
@@ -17,12 +18,7 @@ export function HashGeneratorTool() {
   }, [input]);
 
   return (
-    <div className="h-full flex-col">
-      <div className="tool-header">
-        <h2>Hash Generator</h2>
-        <p>Gere hashes MD5, SHA-1, SHA-256 e SHA-512 instantaneamente.</p>
-      </div>
-
+    <ToolLayout title="Hash Generator" description="Gere hashes MD5, SHA-1, SHA-256 e SHA-512 instantaneamente.">
       <div className="tool-body">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '800px' }}>
           
@@ -63,6 +59,6 @@ export function HashGeneratorTool() {
 
         </div>
       </div>
-    </div>
+    </ToolLayout>
   );
 }

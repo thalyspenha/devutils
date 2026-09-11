@@ -19,13 +19,6 @@
 - **Entregue:** `src/tools.ts` (array `TOOLS` extraído, consumido por `Sidebar` + palette), `src/components/CommandPalette.tsx` (listener global, match fuzzy inline, `useMemo`, navegação `↑`/`↓`/`Enter`/`Esc`, clique fora), montado em `App.tsx` dentro do `HashRouter`, estilos `.command-palette-*` em `index.css`.
 - **Follow-ups opcionais:** `scrollIntoView` do item selecionado em listas longas; hint visual do atalho na sidebar.
 
-### 1.2 Persistência leve por ferramenta · P
-- **O quê:** salvar em `localStorage` o último input de cada tool e a última rota aberta; restaurar no mount / no boot.
-- **Por quê:** reabrir o app onde parou. Continua 100% local (nada sai da máquina).
-- **Toca em:** novo hook `src/hooks/usePersistentState.ts` (wrapper de `useState` + `localStorage`), adotado nas tools; `App.tsx` para a última rota.
-- **Cuidado:** não persistir campos sensíveis por padrão (secret do JWT, chave privada RSA, senha gerada). Opt-out explícito nesses.
-- **Pronto quando:** fechar e reabrir mantém input e tool; limpar o campo limpa o storage.
-
 ### 1.3 Error boundary global · P · ✅ feito
 - **O quê:** `<ErrorBoundary>` em volta das `<Routes>` com tela de "essa ferramenta quebrou" + botão de reset.
 - **Por quê:** hoje um `throw` em qualquer componente apaga o app inteiro (tela branca, sem recuperação).
@@ -73,10 +66,12 @@
 - **Entregue:** as 15 tools agora são `lazy(() => import(...))`; `<Routes>` envolvidas por `<Suspense fallback={<RouteFallback />}>` (fallback simples com "Carregando...", inline, sem CSS novo) dentro do `<ErrorBoundary>` existente. `Sidebar`/`CommandPalette`/`ErrorBoundary` continuam import estático (sempre necessários, pequenos). Resultado: sem mais o aviso de chunk >500 KB; o bundle principal caiu de ~835 KB para ~238 KB, com libs pesadas de uma única tool isoladas em chunk próprio (`SqlFormatterTool` ~265 KB, `CronParserTool` ~184 KB, carregados só ao abrir essas rotas).
 - **Validado:** testado manualmente com `electron .` sob `file://` (produção) navegando entre várias rotas (inclusive `/sql`, o maior chunk) — screenshot confirmando o carregamento correto do chunk sob demanda, sem violação de CSP nem erro no console do renderer.
 
-### 2.6 Extrair o "shell de ferramenta" e reduzir estilo inline · M
+### 2.6 Extrair o "shell de ferramenta" e reduzir estilo inline · M · ✅ feito
 - **O quê:** um `<ToolLayout title description>` + componentes de painel (`<PanelInput>`, `<PanelOutput>`) que hoje são copiados em quase todo `*Tool.tsx`; mover o `style={{}}` repetido para classes em `index.css`.
 - **Por quê:** manutenção — mudar o visual de um painel hoje é editar 15 arquivos. Muito `inline-style soup`.
-- **Cuidado:** manter o padrão `.tool-header` + `.tool-body`; sem lib nova.
+- **Entregue:** `src/components/ToolLayout.tsx` (`.main-content` + `.tool-header` com título/descrição; children ficam livres para ter 1+ `.tool-body` — necessário pro `JwtDecoderTool`, que tem uma barra de abas entre o header e dois `.tool-body` condicionais). `src/components/ToolPanel.tsx` (painel `glass-panel` com label — opcionalmente com botões de ação alinhados à direita — reunindo `<PanelInput>`/`<PanelOutput>` num componente só, já que a única diferença entre os dois era o `readOnly` da textarea e o conjunto de botões, ambos resolvidos por props/children). As 15 tools agora usam `<ToolLayout>` (unificando o wrapper — antes 12 tools usavam `h-full flex-col`, sem `flex-grow` explícito, e 3 usavam `main-content`; agora todas usam `main-content`, mais robusto); `ToolPanel` foi adotado nos 5 arquivos com o padrão de painel duplo input/output (`JsonFormatterTool`, `Base64Tool`, `BackslashEscapeTool`, `SqlFormatterTool`, `JwtDecoderTool` — painéis "Encoded JWT"/"Header"/"Payload"). Os demais 10 arquivos (campo único ou múltiplos campos, sem o padrão de painel gêmeo) só adotaram `ToolLayout`; forçar `ToolPanel` neles teria sido abstração sem motivo real.
+- **Cuidado:** manteve o padrão `.tool-header` + `.tool-body`; sem lib nova, sem CSS global novo (`ToolLayout`/`ToolPanel` reusam as classes `main-content`/`tool-header`/`glass-panel`/`flex-*` já existentes em `index.css`).
+- **Validado:** testado manualmente com `electron .` sob `file://` (produção), navegando por 8 rotas (incluindo as 5 que usam `ToolPanel` e a `RegExpTesterTool`, que perdeu um `paddingBottom: 24px` vestigial no wrapper antigo) — screenshots confirmando visual idêntico ao anterior, sem violação de CSP nem erro no console do renderer.
 
 ### 2.7 Ícone e metadados do pacote · P
 - **O quê:** já existe `app/build/icon.png`; falta `.desktop` decente / `synopsis` / `maintainer` no bloco `build`; avaliar targets além de AppImage (`deb`).

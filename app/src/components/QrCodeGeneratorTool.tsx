@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
+import { ToolLayout } from './ToolLayout';
 
 export function QrCodeGeneratorTool() {
   const [text, setText] = useState('https://example.com');
@@ -35,12 +36,7 @@ export function QrCodeGeneratorTool() {
   };
 
   return (
-    <div className="h-full flex-col">
-      <div className="tool-header">
-        <h2>QR Code Generator</h2>
-        <p>Gerar QR codes para URLs ou textos de teste rapidamente.</p>
-      </div>
-
+    <ToolLayout title="QR Code Generator" description="Gerar QR codes para URLs ou textos de teste rapidamente.">
       <div className="tool-body">
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 1fr)', gap: '24px', alignItems: 'start' }}>
 
@@ -123,6 +119,6 @@ export function QrCodeGeneratorTool() {
 
         </div>
       </div>
-    </div>
+    </ToolLayout>
   );
 }

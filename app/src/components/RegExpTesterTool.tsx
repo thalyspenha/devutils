@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { ToolLayout } from './ToolLayout';
 
 export function RegExpTesterTool() {
   const [pattern, setPattern] = useState('');
@@ -80,12 +81,7 @@ export function RegExpTesterTool() {
   };
 
   return (
-    <div className="flex-col h-full" style={{ paddingBottom: '24px' }}>
-      <div className="tool-header">
-        <h2>RegExp Tester</h2>
-        <p>Teste e depure expressões regulares em tempo real</p>
-      </div>
-      
+    <ToolLayout title="RegExp Tester" description="Teste e depure expressões regulares em tempo real">
       <div className="tool-body">
         
         {/* Pattern Input */}
@@ -206,6 +202,6 @@ export function RegExpTesterTool() {
         )}
 
       </div>
-    </div>
+    </ToolLayout>
   );
 }

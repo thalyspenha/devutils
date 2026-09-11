@@ -1,7 +1,17 @@
 import { useState, useMemo } from 'react';
+import type { CSSProperties } from 'react';
 import { Trash2, Copy, Check, FileJson, CheckCircle2, AlertCircle, ClipboardPaste } from 'lucide-react';
 import { useClipboardData } from '../hooks/useClipboardData';
 import { useCopy } from '../hooks/useCopy';
+import { ToolLayout } from './ToolLayout';
+import { ToolPanel } from './ToolPanel';
+
+const PANEL_LABEL_STYLE: CSSProperties = {
+  color: 'var(--text-secondary)',
+  fontSize: '12px',
+  textTransform: 'uppercase',
+  letterSpacing: '1px',
+};
 
 export function JsonFormatterTool() {
   const [input, setInput] = useState('');
@@ -25,14 +35,9 @@ export function JsonFormatterTool() {
   }, [input]);
 
   return (
-    <div className="main-content">
-      <div className="tool-header">
-        <h2>JSON Formatter</h2>
-        <p>Formate, valide e embeleze seus dados JSON.</p>
-      </div>
-
+    <ToolLayout title="JSON Formatter" description="Formate, valide e embeleze seus dados JSON.">
       <div className="tool-body">
-        
+
         {/* Status Bar */}
         <div className="flex justify-between items-center" style={{ padding: '0 4px' }}>
           <div className="flex items-center gap-2">
@@ -53,7 +58,7 @@ export function JsonFormatterTool() {
                </span>
             )}
           </div>
-          
+
           <div className="flex gap-2">
              <button className="secondary" onClick={pasteFromClipboard} title="Colar da área de transferência">
                 <ClipboardPaste size={16} />
@@ -75,28 +80,26 @@ export function JsonFormatterTool() {
 
         {/* Editor Area */}
         <div className="flex-1 flex gap-4">
-          <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
-            <span style={{ fontWeight: 500, marginBottom: '12px', color: 'var(--text-secondary)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Entrada</span>
+          <ToolPanel label="Entrada" labelStyle={PANEL_LABEL_STYLE}>
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Cole o JSON aqui..."
               style={{ border: 'none', background: 'transparent', boxShadow: 'none', padding: 0 }}
             />
-          </div>
+          </ToolPanel>
 
-          <div className="flex-1 flex-col glass-panel" style={{ padding: '16px', background: 'rgba(15, 23, 42, 0.4)' }}>
-           <span style={{ fontWeight: 500, marginBottom: '12px', color: 'var(--text-secondary)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Saída Formatada</span>
+          <ToolPanel label="Saída Formatada" labelStyle={PANEL_LABEL_STYLE} style={{ background: 'rgba(15, 23, 42, 0.4)' }}>
             <textarea
               value={output}
               readOnly
               placeholder="Resultado..."
               style={{ border: 'none', background: 'transparent', boxShadow: 'none', padding: 0 }}
             />
-          </div>
+          </ToolPanel>
         </div>
 
       </div>
-    </div>
+    </ToolLayout>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useCopy } from '../hooks/useCopy';
+import { ToolLayout } from './ToolLayout';
 
 export function UuidGeneratorTool() {
   const [uuids, setUuids] = useState<string[]>([crypto.randomUUID()]);
@@ -20,12 +21,7 @@ export function UuidGeneratorTool() {
   };
 
   return (
-    <div className="h-full flex-col">
-      <div className="tool-header">
-        <h2>UUID/GUID Generator</h2>
-        <p>Gere identificadores únicos universais (UUIDs) versão 4.</p>
-      </div>
-
+    <ToolLayout title="UUID/GUID Generator" description="Gere identificadores únicos universais (UUIDs) versão 4.">
       <div className="tool-body">
         <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '600px' }}>
           <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
@@ -76,6 +72,6 @@ export function UuidGeneratorTool() {
           </div>
         </div>
       </div>
-    </div>
+    </ToolLayout>
   );
 }

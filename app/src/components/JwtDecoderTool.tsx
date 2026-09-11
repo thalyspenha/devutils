@@ -1,8 +1,18 @@
 import { useState, useMemo } from 'react';
+import type { CSSProperties } from 'react';
 import { Trash2, AlertCircle, CheckCircle2, Copy, Check, ClipboardPaste } from 'lucide-react';
 import CryptoJS from 'crypto-js';
 import { useClipboardData } from '../hooks/useClipboardData';
 import { useCopy } from '../hooks/useCopy';
+import { ToolLayout } from './ToolLayout';
+import { ToolPanel } from './ToolPanel';
+
+const PANEL_LABEL_STYLE: CSSProperties = {
+  color: 'var(--text-secondary)',
+  fontSize: '12px',
+  textTransform: 'uppercase',
+  letterSpacing: '1px',
+};
 
 const DEFAULT_PAYLOAD = () => {
   const now = Math.floor(Date.now() / 1000);
@@ -108,12 +118,7 @@ export function JwtDecoderTool() {
   });
 
   return (
-    <div className="main-content">
-      <div className="tool-header">
-        <h2>JWT Tool</h2>
-        <p>Decodifique e gere JSON Web Tokens.</p>
-      </div>
-
+    <ToolLayout title="JWT Tool" description="Decodifique e gere JSON Web Tokens.">
       <div style={{ display: 'flex', gap: '4px', padding: '0 0 16px 0' }}>
         <button style={tabStyle('decode')} onClick={() => setActiveTab('decode')}>Decodificar</button>
         <button style={tabStyle('generate')} onClick={() => setActiveTab('generate')}>Gerar</button>
@@ -121,25 +126,28 @@ export function JwtDecoderTool() {
 
       {activeTab === 'decode' && (
         <div className="tool-body">
-          <div className="flex-col glass-panel" style={{ padding: '16px', minHeight: '120px', flex: '0 0 auto' }}>
-            <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
-              <span style={{ fontWeight: 500, color: 'var(--text-secondary)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Encoded JWT</span>
-              <div style={{ display: 'flex', gap: '6px' }}>
+          <ToolPanel
+            label="Encoded JWT"
+            labelStyle={PANEL_LABEL_STYLE}
+            style={{ minHeight: '120px', flex: '0 0 auto' }}
+            actions={
+              <>
                 <button className="secondary" style={{ padding: '6px' }} onClick={pasteFromClipboard} title="Colar da área de transferência">
                   <ClipboardPaste size={16} />
                 </button>
-                <button className="secondary" style={{ padding: '6px' }} onClick={() => setInput('')} title="Clear">
+                <button className="secondary" style={{ padding: '6px' }} onClick={() => setInput('')} title="Limpar">
                   <Trash2 size={16} />
                 </button>
-              </div>
-            </div>
+              </>
+            }
+          >
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Cole o JWT aqui..."
               style={{ border: 'none', background: 'transparent', boxShadow: 'none', padding: 0, height: '80px', flex: 1 }}
             />
-          </div>
+          </ToolPanel>
 
           <div className="flex-col" style={{ gap: '6px', padding: '0 4px' }}>
             <label style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Secret (opcional — verifica assinatura HS256)</label>
@@ -177,14 +185,12 @@ export function JwtDecoderTool() {
           </div>
 
           <div className="flex-1 flex gap-4">
-            <div className="flex-1 flex-col glass-panel" style={{ padding: '16px', background: 'rgba(15, 23, 42, 0.4)' }}>
-              <span style={{ fontWeight: 500, marginBottom: '12px', color: '#ef4444', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Header (Algorithm & Type)</span>
+            <ToolPanel label="Header (Algorithm & Type)" labelStyle={{ ...PANEL_LABEL_STYLE, color: '#ef4444' }} style={{ background: 'rgba(15, 23, 42, 0.4)' }}>
               <textarea value={header} readOnly placeholder="Decoded header..." style={{ border: 'none', background: 'transparent', boxShadow: 'none', padding: 0 }} />
-            </div>
-            <div className="flex-1 flex-col glass-panel" style={{ padding: '16px', background: 'rgba(15, 23, 42, 0.4)' }}>
-              <span style={{ fontWeight: 500, marginBottom: '12px', color: '#8b5cf6', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Payload (Data)</span>
+            </ToolPanel>
+            <ToolPanel label="Payload (Data)" labelStyle={{ ...PANEL_LABEL_STYLE, color: '#8b5cf6' }} style={{ background: 'rgba(15, 23, 42, 0.4)' }}>
               <textarea value={payload} readOnly placeholder="Decoded payload..." style={{ border: 'none', background: 'transparent', boxShadow: 'none', padding: 0 }} />
-            </div>
+            </ToolPanel>
           </div>
         </div>
       )}
@@ -239,6 +245,6 @@ export function JwtDecoderTool() {
           </div>
         </div>
       )}
-    </div>
+    </ToolLayout>
   );
 }

@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { ArrowLeftRight, Trash2, Copy, Check, ClipboardPaste } from 'lucide-react';
 import { useClipboardData } from '../hooks/useClipboardData';
 import { useCopy } from '../hooks/useCopy';
+import { ToolLayout } from './ToolLayout';
+import { ToolPanel } from './ToolPanel';
 
 export function Base64Tool() {
   const [input, setInput] = useState('');
@@ -41,16 +43,11 @@ export function Base64Tool() {
   };
 
   return (
-    <div className="main-content">
-      <div className="tool-header">
-        <h2>Base64 Encoder/Decoder</h2>
-        <p>Codifique ou decodifique texto para Base64 instantaneamente.</p>
-      </div>
-
+    <ToolLayout title="Base64 Encoder/Decoder" description="Codifique ou decodifique texto para Base64 instantaneamente.">
       <div className="tool-body">
         <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
-          <button 
-            className={mode === 'encode' ? '' : 'secondary'} 
+          <button
+            className={mode === 'encode' ? '' : 'secondary'}
             onClick={() => setMode('encode')}
           >
             Codificar
@@ -64,25 +61,26 @@ export function Base64Tool() {
         </div>
 
         <div className="flex-1 flex gap-4" style={{ gap: '16px' }}>
-          
-          <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
-            <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
-              <span style={{ fontWeight: 500 }}>Entrada</span>
-              <div style={{ display: 'flex', gap: '6px' }}>
+
+          <ToolPanel
+            label="Entrada"
+            actions={
+              <>
                 <button className="secondary" style={{ padding: '6px' }} onClick={pasteFromClipboard} title="Colar da área de transferência">
                   <ClipboardPaste size={16} />
                 </button>
                 <button className="secondary" style={{ padding: '6px' }} onClick={handleClear} title="Limpar">
                   <Trash2 size={16} />
                 </button>
-              </div>
-            </div>
+              </>
+            }
+          >
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={`Cole o texto para ${mode === 'encode' ? 'codificar' : 'decodificar'}...`}
             />
-          </div>
+          </ToolPanel>
 
           <div className="flex items-center justify-center">
             <button className="secondary" onClick={toggleMode} style={{ borderRadius: '50%', padding: '12px' }} title="Trocar entrada/saída">
@@ -90,13 +88,14 @@ export function Base64Tool() {
             </button>
           </div>
 
-          <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
-            <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
-              <span style={{ fontWeight: 500 }}>Saída</span>
+          <ToolPanel
+            label="Saída"
+            actions={
               <button className="secondary" style={{ padding: '6px' }} onClick={() => copy(output)} title={copied ? 'Copiado!' : 'Copiar'}>
                 {copied ? <Check size={16} color="var(--success-color)" /> : <Copy size={16} />}
               </button>
-            </div>
+            }
+          >
             {error ? (
               <div style={{ color: 'var(--error-color)', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>
                 {error}
@@ -108,10 +107,9 @@ export function Base64Tool() {
                 placeholder="O resultado aparecerá aqui..."
               />
             )}
-           
-          </div>
+          </ToolPanel>
         </div>
       </div>
-    </div>
+    </ToolLayout>
   );
 }
