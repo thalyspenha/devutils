@@ -5,7 +5,7 @@ export function Sidebar() {
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <h1>DevUtils Linux</h1>
+        <h1>DevUtils</h1>
       </div>
       <div className="flex-col">
         {TOOLS.map((tool) => (

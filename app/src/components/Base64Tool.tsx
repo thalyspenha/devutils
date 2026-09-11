@@ -26,7 +26,7 @@ export function Base64Tool() {
       }
       return { output: decodeURIComponent(escape(atob(input))), error: '' };
     } catch {
-      return { output: '', error: 'Invalid input for ' + mode };
+      return { output: '', error: 'Entrada inválida para ' + (mode === 'encode' ? 'codificação' : 'decodificação') };
     }
   }, [input, mode]);
 
@@ -44,7 +44,7 @@ export function Base64Tool() {
     <div className="main-content">
       <div className="tool-header">
         <h2>Base64 Encoder/Decoder</h2>
-        <p>Encode or decode text to Base64 format instantly.</p>
+        <p>Codifique ou decodifique texto para Base64 instantaneamente.</p>
       </div>
 
       <div className="tool-body">
@@ -53,13 +53,13 @@ export function Base64Tool() {
             className={mode === 'encode' ? '' : 'secondary'} 
             onClick={() => setMode('encode')}
           >
-            Encode
+            Codificar
           </button>
-          <button 
-            className={mode === 'decode' ? '' : 'secondary'} 
+          <button
+            className={mode === 'decode' ? '' : 'secondary'}
             onClick={() => setMode('decode')}
           >
-            Decode
+            Decodificar
           </button>
         </div>
 
@@ -67,32 +67,32 @@ export function Base64Tool() {
           
           <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
             <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
-              <span style={{ fontWeight: 500 }}>Input</span>
+              <span style={{ fontWeight: 500 }}>Entrada</span>
               <div style={{ display: 'flex', gap: '6px' }}>
                 <button className="secondary" style={{ padding: '6px' }} onClick={pasteFromClipboard} title="Colar da área de transferência">
                   <ClipboardPaste size={16} />
                 </button>
-                <button className="secondary" style={{ padding: '6px' }} onClick={handleClear} title="Clear">
+                <button className="secondary" style={{ padding: '6px' }} onClick={handleClear} title="Limpar">
                   <Trash2 size={16} />
                 </button>
               </div>
             </div>
-            <textarea 
+            <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={`Paste text to ${mode}...`}
+              placeholder={`Cole o texto para ${mode === 'encode' ? 'codificar' : 'decodificar'}...`}
             />
           </div>
 
           <div className="flex items-center justify-center">
-            <button className="secondary" onClick={toggleMode} style={{ borderRadius: '50%', padding: '12px' }} title="Swap Input/Output">
+            <button className="secondary" onClick={toggleMode} style={{ borderRadius: '50%', padding: '12px' }} title="Trocar entrada/saída">
                <ArrowLeftRight size={20} />
             </button>
           </div>
 
           <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
             <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
-              <span style={{ fontWeight: 500 }}>Output</span>
+              <span style={{ fontWeight: 500 }}>Saída</span>
               <button className="secondary" style={{ padding: '6px' }} onClick={() => copy(output)} title={copied ? 'Copiado!' : 'Copiar'}>
                 {copied ? <Check size={16} color="var(--success-color)" /> : <Copy size={16} />}
               </button>
@@ -102,10 +102,10 @@ export function Base64Tool() {
                 {error}
               </div>
             ) : (
-             <textarea 
+             <textarea
                 value={output}
                 readOnly
-                placeholder="Result will appear here..."
+                placeholder="O resultado aparecerá aqui..."
               />
             )}
            

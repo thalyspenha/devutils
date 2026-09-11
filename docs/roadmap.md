@@ -36,10 +36,10 @@
 - **Por quê:** todos os `navigator.clipboard.writeText` eram silenciosos — o usuário não sabia se funcionou.
 - **Entregue:** `src/hooks/useCopy.ts` (`{ copy, copiedKey, copied }`, timeout 1.5s, suporta várias `key` por tela); adotado nos 10 componentes com botão de copiar. Botão de texto troca para "Copiado!" (verde nos `.secondary`); botão de ícone troca `<Copy>` por `<Check>` verde. Sem toast/portal novo.
 
-### 1.5 Consistência de idioma e identidade · P
-- **O quê:** padronizar a UI em PT-BR (hoje JSON/Base64/RegExp/Unix/Backslash estão em inglês); unificar o nome: `<title>` = "Devtools", sidebar = "DevUtils Linux", `productName` = "DevUtils".
+### 1.5 Consistência de idioma e identidade · P · ✅ feito
+- **O quê:** padronizar a UI em PT-BR (JSON/Base64/RegExp/Unix/Backslash estavam em inglês); unificar o nome entre `<title>`, sidebar e `productName`.
 - **Por quê:** `CLAUDE.md` já manda PT-BR; a inconsistência de nome aparece em 4 lugares (ver `docs/decisions.md`).
-- **Toca em:** todos os `*Tool.tsx` (títulos/descrições/placeholders), `index.html`, `Sidebar.tsx`.
+- **Entregue:** descrições, labels, botões, placeholders e mensagens de erro/estado traduzidos em `JsonFormatterTool.tsx`, `Base64Tool.tsx`, `RegExpTesterTool.tsx`, `UnixTimeConverterTool.tsx` e `BackslashEscapeTool.tsx` (títulos `<h2>` mantidos em inglês, seguindo o padrão já usado nas demais tools, onde o nome bate com `TOOLS[]`/Sidebar); `Sidebar.tsx` agora mostra "DevUtils", igual ao `<title>` e ao `productName`.
 
 ---
 

@@ -33,7 +33,7 @@ export function RegExpTesterTool() {
 
   const renderHighlightedText = () => {
     if (!pattern || error || !matchResult || matchResult.length === 0) {
-      return <div style={{ whiteSpace: 'pre-wrap', color: 'var(--text-secondary)' }}>{testString || 'Matches will be highlighted here...'}</div>;
+      return <div style={{ whiteSpace: 'pre-wrap', color: 'var(--text-secondary)' }}>{testString || 'As correspondências serão destacadas aqui...'}</div>;
     }
 
     try {
@@ -83,14 +83,14 @@ export function RegExpTesterTool() {
     <div className="flex-col h-full" style={{ paddingBottom: '24px' }}>
       <div className="tool-header">
         <h2>RegExp Tester</h2>
-        <p>Test and debug regular expressions in real-time</p>
+        <p>Teste e depure expressões regulares em tempo real</p>
       </div>
       
       <div className="tool-body">
         
         {/* Pattern Input */}
         <div className="glass-panel" style={{ padding: '24px', marginBottom: '16px' }}>
-          <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Regular Expression</h3>
+          <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Expressão Regular</h3>
           
           <div className="flex items-center gap-2 mb-2" style={{ background: 'var(--app-bg)', padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
             <span style={{ color: 'var(--text-secondary)', paddingLeft: '8px', fontWeight: 'bold' }}>/</span>
@@ -98,7 +98,7 @@ export function RegExpTesterTool() {
               type="text" 
               value={pattern}
               onChange={(e) => setPattern(e.target.value)}
-              placeholder="Enter regular expression..."
+              placeholder="Digite a expressão regular..."
               style={{ flex: 1, padding: '8px', border: 'none', background: 'transparent', color: 'var(--accent)', outline: 'none', fontFamily: 'monospace', fontSize: '16px' }}
             />
             <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>/</span>
@@ -108,7 +108,7 @@ export function RegExpTesterTool() {
               onChange={(e) => setFlags(e.target.value)}
               placeholder="g"
               style={{ width: '60px', padding: '8px', border: 'none', background: 'transparent', color: 'white', outline: 'none', fontFamily: 'monospace', fontSize: '16px' }}
-              title="Flags (e.g., g, m, i)"
+              title="Flags (ex.: g, m, i)"
             />
           </div>
           {error && <div style={{ color: 'var(--error-color)', fontSize: '14px', marginTop: '8px' }}>{error}</div>}
@@ -117,10 +117,10 @@ export function RegExpTesterTool() {
         {/* Test String */}
         <div className="glass-panel" style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div className="flex justify-between items-center mb-4">
-             <h3 style={{ fontSize: '16px', fontWeight: 600 }}>Test String</h3>
+             <h3 style={{ fontSize: '16px', fontWeight: 600 }}>String de Teste</h3>
              {matchResult && pattern && !error && (
                <span style={{ fontSize: '13px', color: 'var(--text-secondary)', background: 'var(--app-bg)', padding: '2px 8px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                 {matchResult.length} match{matchResult.length !== 1 ? 'es' : ''}
+                 {matchResult.length} correspondência{matchResult.length !== 1 ? 's' : ''}
                </span>
              )}
           </div>
@@ -129,7 +129,7 @@ export function RegExpTesterTool() {
             <textarea 
                value={testString}
                onChange={(e) => setTestString(e.target.value)}
-               placeholder="Enter text to test your regular expression against..."
+               placeholder="Digite o texto para testar sua expressão regular..."
                style={{ 
                  flex: 1,
                  padding: '12px 14px', 
@@ -170,23 +170,23 @@ export function RegExpTesterTool() {
         {/* Match Details */}
         {matchResult && matchResult.length > 0 && !error && (
           <div className="glass-panel" style={{ padding: '24px', marginTop: '16px', maxHeight: '300px', overflowY: 'auto' }}>
-            <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Match Details</h3>
+            <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Detalhes das Correspondências</h3>
             <div className="flex flex-col gap-2">
               {matchResult.slice(0, 50).map((match, i) => (
                 <div key={i} style={{ background: 'var(--app-bg)', padding: '12px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                    <div style={{ marginBottom: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                     <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Match {i + 1}</span>
-                     <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Index: {match.index}</span>
+                     <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Correspondência {i + 1}</span>
+                     <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Índice: {match.index}</span>
                    </div>
                    <div style={{ fontFamily: 'monospace', color: 'var(--accent)', wordBreak: 'break-all' }}>
                      {match[0]}
                    </div>
                    {match.length > 1 && (
                      <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed var(--border-color)' }}>
-                       <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Capture Groups</div>
+                       <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Grupos de Captura</div>
                        {Array.from(match).slice(1).map((group, j) => (
                          <div key={j} style={{ display: 'flex', gap: '8px', fontSize: '13px', fontFamily: 'monospace', marginBottom: '4px' }}>
-                           <span style={{ color: 'var(--text-secondary)' }}>Group {j + 1}:</span>
+                           <span style={{ color: 'var(--text-secondary)' }}>Grupo {j + 1}:</span>
                            <span style={{ color: group === undefined ? 'var(--text-secondary)' : 'var(--text)', fontStyle: group === undefined ? 'italic' : 'normal' }}>
                              {group === undefined ? 'undefined' : String(group)}
                            </span>
@@ -198,7 +198,7 @@ export function RegExpTesterTool() {
               ))}
               {matchResult.length > 50 && (
                  <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '12px', fontSize: '13px' }}>
-                   Showing first 50 of {matchResult.length} matches.
+                   Mostrando as primeiras 50 de {matchResult.length} correspondências.
                  </div>
               )}
             </div>

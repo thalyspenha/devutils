@@ -59,7 +59,7 @@ export function BackslashEscapeTool() {
     <div className="main-content">
       <div className="tool-header">
         <h2>Backslash Escape / Unescape</h2>
-        <p>Escape or unescape backslash sequences like \n, \t, \\, \" and more.</p>
+        <p>Escape ou remova o escape de sequências de barra invertida como \n, \t, \\, \" e outras.</p>
       </div>
 
       <div className="tool-body">
@@ -68,25 +68,25 @@ export function BackslashEscapeTool() {
             className={mode === 'escape' ? '' : 'secondary'}
             onClick={() => setMode('escape')}
           >
-            Escape
+            Escapar
           </button>
           <button
             className={mode === 'unescape' ? '' : 'secondary'}
             onClick={() => setMode('unescape')}
           >
-            Unescape
+            Remover escape
           </button>
         </div>
 
         <div className="flex-1 flex gap-4" style={{ gap: '16px' }}>
           <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
             <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
-              <span style={{ fontWeight: 500 }}>Input</span>
+              <span style={{ fontWeight: 500 }}>Entrada</span>
               <div style={{ display: 'flex', gap: '6px' }}>
                 <button className="secondary" style={{ padding: '6px' }} onClick={pasteFromClipboard} title="Colar da área de transferência">
                   <ClipboardPaste size={16} />
                 </button>
-                <button className="secondary" style={{ padding: '6px' }} onClick={handleClear} title="Clear">
+                <button className="secondary" style={{ padding: '6px' }} onClick={handleClear} title="Limpar">
                   <Trash2 size={16} />
                 </button>
               </div>
@@ -94,7 +94,7 @@ export function BackslashEscapeTool() {
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={mode === 'escape' ? 'Paste text to escape...' : 'Paste escaped text to unescape...'}
+              placeholder={mode === 'escape' ? 'Cole o texto para escapar...' : 'Cole o texto escapado para remover o escape...'}
             />
           </div>
 
@@ -103,7 +103,7 @@ export function BackslashEscapeTool() {
               className="secondary"
               onClick={toggleMode}
               style={{ borderRadius: '50%', padding: '12px' }}
-              title="Swap Input/Output"
+              title="Trocar entrada/saída"
             >
               <ArrowLeftRight size={20} />
             </button>
@@ -111,7 +111,7 @@ export function BackslashEscapeTool() {
 
           <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
             <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
-              <span style={{ fontWeight: 500 }}>Output</span>
+              <span style={{ fontWeight: 500 }}>Saída</span>
               <button className="secondary" style={{ padding: '6px' }} onClick={() => copy(output)} title={copied ? 'Copiado!' : 'Copiar'}>
                 {copied ? <Check size={16} color="var(--success-color)" /> : <Copy size={16} />}
               </button>
@@ -119,25 +119,25 @@ export function BackslashEscapeTool() {
             <textarea
               value={output}
               readOnly
-              placeholder="Result will appear here..."
+              placeholder="O resultado aparecerá aqui..."
             />
           </div>
         </div>
 
         <div className="glass-panel" style={{ padding: '16px' }}>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: 500 }}>Supported sequences</p>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: 500 }}>Sequências suportadas</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {[
-              ['\\\\', 'Backslash'],
-              ['\\n', 'New line'],
-              ['\\r', 'Carriage return'],
-              ['\\t', 'Tab'],
-              ['\\0', 'Null'],
-              ['\\"', 'Double quote'],
-              ["\\'", 'Single quote'],
-              ['\\b', 'Backspace'],
-              ['\\f', 'Form feed'],
-              ['\\v', 'Vertical tab'],
+              ['\\\\', 'Barra invertida'],
+              ['\\n', 'Nova linha'],
+              ['\\r', 'Retorno de carro'],
+              ['\\t', 'Tabulação'],
+              ['\\0', 'Nulo'],
+              ['\\"', 'Aspas duplas'],
+              ["\\'", 'Aspas simples'],
+              ['\\b', 'Retrocesso'],
+              ['\\f', 'Alimentação de página'],
+              ['\\v', 'Tabulação vertical'],
             ].map(([seq, label]) => (
               <div
                 key={seq}

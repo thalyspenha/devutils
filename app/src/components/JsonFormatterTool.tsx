@@ -19,7 +19,7 @@ export function JsonFormatterTool() {
         const fixed = input.replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
         return { output: JSON.stringify(JSON.parse(fixed), null, 2), error: null };
       } catch {
-        return { output: '', error: err instanceof Error ? err.message : 'Invalid JSON format' };
+        return { output: '', error: err instanceof Error ? err.message : 'Formato JSON inválido' };
       }
     }
   }, [input]);
@@ -28,7 +28,7 @@ export function JsonFormatterTool() {
     <div className="main-content">
       <div className="tool-header">
         <h2>JSON Formatter</h2>
-        <p>Format, validate, and beautify your JSON data.</p>
+        <p>Formate, valide e embeleze seus dados JSON.</p>
       </div>
 
       <div className="tool-body">
@@ -39,17 +39,17 @@ export function JsonFormatterTool() {
             {input.length === 0 ? (
                <span style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                  <FileJson size={18} />
-                 Waiting for input...
+                 Aguardando entrada...
                </span>
             ) : error ? (
                <span style={{ color: 'var(--error-color)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                  <AlertCircle size={18} />
-                 Invalid JSON
+                 JSON inválido
                </span>
             ) : (
                <span style={{ color: 'var(--success-color)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                  <CheckCircle2 size={18} />
-                 Valid JSON
+                 JSON válido
                </span>
             )}
           </div>
@@ -58,7 +58,7 @@ export function JsonFormatterTool() {
              <button className="secondary" onClick={pasteFromClipboard} title="Colar da área de transferência">
                 <ClipboardPaste size={16} />
               </button>
-             <button className="secondary" onClick={() => setInput('')} title="Clear">
+             <button className="secondary" onClick={() => setInput('')} title="Limpar">
                 <Trash2 size={16} />
               </button>
              <button className="secondary" onClick={() => copy(output)} disabled={!output} title={copied ? 'Copiado!' : 'Copiar'}>
@@ -69,28 +69,28 @@ export function JsonFormatterTool() {
 
         {error && (
             <div style={{ color: 'var(--error-color)', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', fontSize: '14px', fontFamily: 'monospace' }}>
-              Error: {error}
+              Erro: {error}
             </div>
         )}
 
         {/* Editor Area */}
         <div className="flex-1 flex gap-4">
           <div className="flex-1 flex-col glass-panel" style={{ padding: '16px' }}>
-            <span style={{ fontWeight: 500, marginBottom: '12px', color: 'var(--text-secondary)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Raw Input</span>
-            <textarea 
+            <span style={{ fontWeight: 500, marginBottom: '12px', color: 'var(--text-secondary)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Entrada</span>
+            <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Paste JSON here..."
+              placeholder="Cole o JSON aqui..."
               style={{ border: 'none', background: 'transparent', boxShadow: 'none', padding: 0 }}
             />
           </div>
 
           <div className="flex-1 flex-col glass-panel" style={{ padding: '16px', background: 'rgba(15, 23, 42, 0.4)' }}>
-           <span style={{ fontWeight: 500, marginBottom: '12px', color: 'var(--text-secondary)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Formatted Output</span>
-            <textarea 
+           <span style={{ fontWeight: 500, marginBottom: '12px', color: 'var(--text-secondary)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Saída Formatada</span>
+            <textarea
               value={output}
               readOnly
-              placeholder="Result..."
+              placeholder="Resultado..."
               style={{ border: 'none', background: 'transparent', boxShadow: 'none', padding: 0 }}
             />
           </div>

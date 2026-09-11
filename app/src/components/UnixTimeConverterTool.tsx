@@ -33,7 +33,7 @@ export function UnixTimeConverterTool() {
 
     const num = Number(unixInput);
     if (isNaN(num)) {
-      setUnixError('Invalid number format.');
+      setUnixError('Formato de número inválido.');
       return;
     }
 
@@ -43,7 +43,7 @@ export function UnixTimeConverterTool() {
     
     const date = new Date(ms);
     if (isNaN(date.getTime())) {
-      setUnixError('Invalid timestamp value out of range.');
+      setUnixError('Valor de timestamp fora do intervalo válido.');
       return;
     }
 
@@ -63,31 +63,31 @@ export function UnixTimeConverterTool() {
     <div className="flex-col h-full">
       <div className="tool-header">
         <h2>Unix Time Converter</h2>
-        <p>Convert Unix timestamps to human-readable dates and vice versa</p>
+        <p>Converta timestamps Unix para datas legíveis e vice-versa</p>
       </div>
       
       <div className="tool-body">
         
         {/* Current Time Widget */}
         <div className="glass-panel p-6 flex flex-col items-center justify-center gap-2" style={{ padding: '24px' }}>
-          <div className="text-secondary text-sm font-medium uppercase tracking-wider">Current Unix Time (seconds)</div>
+          <div className="text-secondary text-sm font-medium uppercase tracking-wider">Hora Unix Atual (segundos)</div>
           <div className="text-4xl font-mono font-bold text-accent">{currentUnix}</div>
         </div>
 
         {/* Unix to Date Section */}
         <div className="glass-panel" style={{ padding: '24px' }}>
-          <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Timestamp to Date</h3>
+          <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Timestamp para Data</h3>
           <div className="flex items-center gap-4 mb-4">
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={unixInput}
               onChange={(e) => setUnixInput(e.target.value)}
-              placeholder="e.g. 1710537000"
+              placeholder="ex.: 1710537000"
               style={{ flex: 1, padding: '10px 14px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--app-bg)', color: 'white', fontFamily: 'monospace' }}
               onKeyDown={(e) => e.key === 'Enter' && handleUnixConvert()}
             />
             <button onClick={handleUnixConvert} className="flex items-center gap-2">
-              Convert <ArrowRight size={16} />
+              Converter <ArrowRight size={16} />
             </button>
           </div>
           
@@ -96,11 +96,11 @@ export function UnixTimeConverterTool() {
           {dateOutput && (
             <div style={{ background: 'var(--app-bg)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div className="flex justify-between items-center" style={{ paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
-                <span className="text-secondary" style={{ fontSize: '13px' }}>Local Time</span>
+                <span className="text-secondary" style={{ fontSize: '13px' }}>Hora Local</span>
                 <span className="font-mono text-primary font-medium">{dateOutput.local}</span>
               </div>
               <div className="flex justify-between items-center" style={{ paddingTop: '8px' }}>
-                <span className="text-secondary" style={{ fontSize: '13px' }}>UTC Time</span>
+                <span className="text-secondary" style={{ fontSize: '13px' }}>Hora UTC</span>
                 <span className="font-mono text-primary font-medium">{dateOutput.utc}</span>
               </div>
             </div>
@@ -109,7 +109,7 @@ export function UnixTimeConverterTool() {
 
         {/* Date to Unix Section */}
         <div className="glass-panel" style={{ padding: '24px' }}>
-          <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Date to Timestamp (Local)</h3>
+          <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Data para Timestamp (Local)</h3>
           <div className="flex items-center gap-4 mb-4">
             <input 
               type="datetime-local" 
@@ -122,7 +122,7 @@ export function UnixTimeConverterTool() {
           {unixOutput !== null && (
             <div style={{ background: 'var(--app-bg)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
               <div className="flex justify-between items-center">
-                <span className="text-secondary" style={{ fontSize: '13px' }}>Unix Timestamp (seconds)</span>
+                <span className="text-secondary" style={{ fontSize: '13px' }}>Timestamp Unix (segundos)</span>
                 <span className="font-mono text-accent text-lg font-bold">{unixOutput}</span>
               </div>
             </div>
