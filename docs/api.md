@@ -29,6 +29,7 @@ Definidas em `app/src/App.tsx` com `<HashRouter>` (URLs reais têm o prefixo `#`
 | `/sql` | `SqlFormatterTool` | Formatador de SQL |
 | `/chmod` | `ChmodCalculatorTool` | Calculadora de permissões Unix (rwx ↔ octal) |
 | `/url` | `UrlParserTool` | Parser de URL — componentes + parâmetros de query decodificados |
+| `/image-base64` | `ImageBase64Tool` | Codifica imagem (arquivo) ↔ Base64 / data URI, com preview e download |
 
 - Sem rota curinga / página 404.
 - Sem parâmetros de rota, query strings ou route guards.
@@ -44,9 +45,11 @@ Definidas em `app/src/App.tsx` com `<HashRouter>` (URLs reais têm o prefixo `#`
 | `window.crypto.getRandomValues()` | `PasswordGeneratorTool` | Aleatoriedade da senha |
 | `crypto.randomUUID()` | `UuidGeneratorTool` | Geração de UUID v4 |
 | `window.crypto.subtle.generateKey / exportKey` | `RsaGeneratorTool` | Geração e export de chaves RSA-OAEP (SPKI/PKCS8) |
-| `btoa` / `atob` | `Base64Tool`, `JwtDecoderTool`, `RsaGeneratorTool` | Base64 |
+| `btoa` / `atob` | `Base64Tool`, `JwtDecoderTool`, `RsaGeneratorTool`, `ImageBase64Tool` | Base64 |
 | `escape` / `unescape` (globais, legados) | `Base64Tool`, `JwtDecoderTool` | Ponte UTF-8 ↔ Latin-1 para `btoa`/`atob` |
+| `FileReader.readAsDataURL()` | `ImageBase64Tool` | Lê o arquivo de imagem escolhido (`<input type="file">`) e converte pra data URI Base64 |
 | `XMLSerializer` + `Blob` + `URL.createObjectURL` + `<a download>` | `QrCodeGeneratorTool` | Download do QR Code em SVG |
+| `<a download>` com `href` = data URI direto (sem `Blob`) | `QrCodeGeneratorTool` (PNG), `ImageBase64Tool` (decode) | Download de imagem a partir de um data URI já em memória |
 | `setInterval` / `clearInterval` | `UnixTimeConverterTool` | Relógio ao vivo |
 
 ### Electron APIs (processo principal)

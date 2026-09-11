@@ -9,7 +9,7 @@
 - **Formatação "ao vivo".** A maioria das ferramentas recalcula o output a cada tecla (derivado com `useMemo`), sem botão "processar". Exceções com ação explícita: `UuidGenerator` ("Gerar"), `PasswordGenerator` ("Gerar Outra Senha"), `RsaGenerator` ("Gerar Chaves"), `JwtDecoder` aba Gerar ("Gerar JWT"), `UnixTime` timestamp→data ("Convert").
 - **Erros não destroem o input.** Entrada inválida mostra mensagem de erro e zera o output, mas mantém o que o usuário digitou.
 - **Tema dark fixo.** Não há troca de tema.
-- **Textos de UI majoritariamente PT-BR.** Descrições, labels, botões, placeholders e mensagens de erro/estado são PT-BR nas 17 tools; só os **títulos** (`<h2>`) continuam em inglês, para bater com o nome em `TOOLS[]`/Sidebar (ex.: "JSON Formatter", "RegExp Tester") — ver `docs/decisions.md`.
+- **Textos de UI majoritariamente PT-BR.** Descrições, labels, botões, placeholders e mensagens de erro/estado são PT-BR nas 18 tools; só os **títulos** (`<h2>`) continuam em inglês, para bater com o nome em `TOOLS[]`/Sidebar (ex.: "JSON Formatter", "RegExp Tester") — ver `docs/decisions.md`.
 
 ## JSON Formatter (`/`)
 
@@ -148,6 +148,15 @@
 - Parâmetros de query: `Array.from(url.searchParams.entries())` — decodifica automaticamente (URL-encoding) e **preserva chaves duplicadas** (`?a=1&a=2` vira duas linhas na tabela, não um objeto que colapsaria pra uma).
 - Componentes exibidos como estão na `URL` nativa (`pathname`/`hash` não recebem decode extra além do que o `URL` já normaliza) — só os parâmetros de query passam por decode explícito via `URLSearchParams`.
 - Campos vazios (porta default, sem usuário/senha, etc.) mostram "—" em vez de célula em branco.
+
+## Image Base64 (`/image-base64`)
+
+- Aceita só arquivos cujo `File.type` comece com `image/`; senão mostra "Selecione um arquivo de imagem." e não altera o preview anterior.
+- Encode: `FileReader.readAsDataURL()` gera a data URI completa; a saída opcionalmente remove o prefixo `data:<mime>;base64,` (checkbox "Incluir prefixo") pra quem só quer o Base64 puro.
+- Decode: se o texto colado já começa com `data:`, usa como está; senão monta `data:<mimeType selecionado>;base64,<input>` — o `<select>` de tipo só importa quando falta o prefixo.
+- Validação do Base64 colado: tenta `atob()` na parte após a vírgula; falha → "Base64 inválido." (sem tentar renderizar `<img>` com dado quebrado).
+- Tamanho estimado do decode: `floor(base64.length * 3/4) - padding` (padding = 2 se termina em `==`, 1 se termina em `=`, senão 0) — não lê o arquivo de fato, é só aritmética sobre o comprimento da string.
+- Download da imagem decodificada usa o data URI direto como `href` de um `<a download>` (mesmo padrão do botão "Baixar PNG" do QR Code) — extensão do arquivo baixado vem do subtipo MIME (`image/jpeg` → `.jpeg`, etc.), com fallback `.png`.
 
 ## O que não foi identificado
 

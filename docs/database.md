@@ -29,7 +29,7 @@ As únicas "estruturas de dados" relevantes são objetos de UI em memória, por 
 
 | Estrutura | Onde | Forma |
 |---|---|---|
-| `TOOLS[]` | `src/tools.ts` | `{ id: string, name: string, icon: Component, path: string }` (array estático, 17 itens; consumido por `Sidebar` e `CommandPalette`) |
+| `TOOLS[]` | `src/tools.ts` | `{ id: string, name: string, icon: Component, path: string }` (array estático, 18 itens; consumido por `Sidebar` e `CommandPalette`) |
 | `DIALECTS[]` | `SqlFormatterTool.tsx` | `{ value: Dialect, label: string }` |
 | `ESCAPE_MAP` / `UNESCAPE_MAP` | `BackslashEscapeTool.tsx` | `Record<string, string>` |
 | `dateOutput` | `UnixTimeConverterTool.tsx` | `{ local: string, utc: string } | null` |

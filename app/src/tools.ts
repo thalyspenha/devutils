@@ -16,6 +16,7 @@ import {
   Database,
   FileLock2,
   Link2,
+  FileImage,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -36,6 +37,7 @@ export const TOOLS: Tool[] = [
   { id: 'cron', name: 'Cron Parser', icon: CalendarClock, path: '/cron' },
   { id: 'sql', name: 'Formatador de SQL', icon: Database, path: '/sql' },
   { id: 'hash', name: 'Hash Generator', icon: Hash, path: '/hash' },
+  { id: 'image-base64', name: 'Image Base64', icon: FileImage, path: '/image-base64' },
   { id: 'json-formatter', name: 'JSON Formatter', icon: Braces, path: '/' },
   { id: 'jwt', name: 'JWT Tool', icon: Lock, path: '/jwt' },
   { id: 'password', name: 'Password Generator', icon: KeyRound, path: '/password' },

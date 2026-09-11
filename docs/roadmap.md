@@ -104,6 +104,12 @@ Cada uma segue o padrão de 3 pontos do `CLAUDE.md` (componente + rota + item no
 | Lorem ipsum / dados fake | `/lorem` | `@faker-js/faker` (grande — avaliar) | |
 | ULID / nanoid (junto do UUID) | — | `ulid`, `nanoid` | Estender `UuidGeneratorTool` |
 
+**Fora da lista original** (sugerida pelo usuário em 2026-09-11, fora da tabela acima):
+
+| Ferramenta | Rota | Lib sugerida | Nota |
+|---|---|---|---|
+| ~~Image Base64 (encode/decode de imagem)~~ | ~~`/image-base64`~~ | — (`FileReader`) | ✅ **feito** — ver abaixo |
+
 ### URL Parser (`/url`) · ✅ feito
 - **O quê:** nova ferramenta `UrlParserTool` — cola uma URL, mostra a quebra de todos os componentes (protocolo, usuário/senha, host, hostname, porta, caminho, query string, fragmento, origin) e uma tabela com cada parâmetro de query já decodificado (via `URLSearchParams`, sem colapsar chaves duplicadas).
 - **Entregue:** `src/components/UrlParserTool.tsx` (3 pontos do padrão do `CLAUDE.md`: componente + rota `/url` em `App.tsx` + item `url` em `TOOLS[]`, ícone `Link2`). Parsing via `new URL(input)` nativo (sem lib nova); erro de URL inválida (falta protocolo, etc.) mostrado inline sem apagar o input. Parâmetros de query listados como `Array.from(url.searchParams.entries())` — preserva duplicatas (ex.: `?foo=1&foo=2`), ao contrário de um objeto simples. Botão "Copiar como JSON" nos parâmetros.
@@ -113,6 +119,11 @@ Cada uma segue o padrão de 3 pontos do `CLAUDE.md` (componente + rota + item no
 - **O quê:** nova ferramenta `ChmodCalculatorTool` — checkboxes rwx (dono/grupo/outros) ↔ número octal, ambos editáveis e sincronizados; simbólico (`rwxr-xr-x`) e comando `chmod NNN arquivo` derivados, read-only, com botão copiar cada um.
 - **Entregue:** `src/components/ChmodCalculatorTool.tsx` (3 pontos do padrão do `CLAUDE.md`: componente + rota `/chmod` em `App.tsx` + item `chmod` em `TOOLS[]`, ícone `FileLock2`). Estado canônico é a string octal (`useState('644')`); checkboxes fazem XOR do bit (4/2/1) no dígito da categoria, campo octal filtra `[0-7]` e trunca em 3 chars — nenhuma lógica extraída pra `src/lib/` (sem teste de unidade pedido para esta ferramenta, então fica inline no componente, como manda a seção 5 do `CLAUDE.md`).
 - **Pronto quando:** rota nova + item no menu, sem lib nova, sem CSS novo. ✅ `npm run lint`, `npm test` (29 testes, inalterados) e `npm run build` passam — a tool virou chunk próprio via code-split (~3.4 KB).
+
+### Image Base64 (`/image-base64`) · ✅ feito
+- **O quê:** nova ferramenta `ImageBase64Tool` — abas **Codificar** (escolhe um arquivo de imagem → preview + data URI Base64, com checkbox pra incluir/remover o prefixo `data:URI`) e **Decodificar** (cola Base64/data URI → preview + tamanho estimado + botão baixar). Sugerida pelo usuário fora da lista original da Fase 3.
+- **Entregue:** `src/components/ImageBase64Tool.tsx` (3 pontos do padrão do `CLAUDE.md`: componente + rota `/image-base64` em `App.tsx` + item `image-base64` em `TOOLS[]`, ícone `FileImage`). Sem lib nova — `FileReader.readAsDataURL()` pro encode (Web API nativa), `atob()` pra validar o Base64 colado no decode, download via `<a download>` com o data URI direto (mesmo padrão do botão "Baixar PNG" do `QrCodeGeneratorTool`). CSP já liberava `img-src data:`, então a preview `<img src="data:...">` funcionou sem tocar em `index.html`.
+- **Pronto quando:** rota nova + item no menu, sem lib nova, sem CSS novo. ✅ `npm run lint`, `npm test` (29 testes, inalterados) e `npm run build` passam — chunk próprio (~6.5 KB). Verificado visualmente via `electron .` (produção) nos dois modos (dado que o diálogo nativo de arquivo não dá pra automatizar num screenshot só, o estado pós-seleção foi simulado temporariamente pra validar preview/output — revertido antes do commit): encode mostrou preview + data URI corretos para um PNG de teste, decode com Base64 sem prefixo (usando o `<select>` de tipo MIME) mostrou preview e "Tamanho estimado: 78 B", batendo exatamente com o tamanho real do arquivo de teste.
 
 ## Correções pontuais conhecidas (dívida técnica)
 

@@ -32,7 +32,7 @@ Todo o processamento das ferramentas acontece **localmente no renderer** (no nav
 │   │  App.tsx → <HashRouter>                                │ │
 │   │     ├── <Sidebar/>  (nav fixa, itera TOOLS de tools.ts)│ │
 │   │     ├── <CommandPalette/>  (Ctrl/Cmd+K, busca fuzzy)   │ │
-│   │     └── <Routes>  17 rotas → 1 componente-ferramenta   │ │
+│   │     └── <Routes>  18 rotas → 1 componente-ferramenta   │ │
 │   │         (cada componente é React.lazy, dentro de       │ │
 │   │          <Suspense>, dentro do <ErrorBoundary>)         │ │
 │   │                                                       │ │
@@ -74,7 +74,7 @@ Script mínimo — hoje é só um comentário. Com `contextIsolation: true` + `s
 
 - `App.tsx` usa **`HashRouter`** do `react-router-dom` v7.
 - Uso de hash routing é coerente com o carregamento via `file://` em produção (`loadFile`), onde history routing quebraria.
-- 17 rotas mapeando 1:1 para um componente-ferramenta (ver `docs/api.md` e `docs/modules.md`).
+- 18 rotas mapeando 1:1 para um componente-ferramenta (ver `docs/api.md` e `docs/modules.md`).
 - A rota `/` renderiza `JsonFormatterTool` (ferramenta padrão).
 - Cada componente-ferramenta é importado com `React.lazy(() => import(...))` e as `<Routes>` ficam dentro de um `<Suspense fallback={<RouteFallback />}>` (fallback simples "Carregando...", inline). Resultado: o bundle deixou de ser um chunk único de ~835 KB — cada tool (e as libs pesadas usadas só por uma tool, como `sql-formatter` e `cronstrue`) vira um chunk próprio, carregado sob demanda ao abrir a rota.
 - **Não há** rota 404 / fallback de navegação (só o fallback de carregamento do `Suspense`).
@@ -164,9 +164,9 @@ devutils/
             ├── Sidebar.tsx
             ├── CommandPalette.tsx
             ├── ErrorBoundary.tsx
-            ├── ToolLayout.tsx   # shell `.main-content` + `.tool-header`, usado pelas 17 tools
+            ├── ToolLayout.tsx   # shell `.main-content` + `.tool-header`, usado pelas 18 tools
             ├── ToolPanel.tsx    # painel glass-panel com label + ações, usado onde há par input/output
-            └── *Tool.tsx        # 17 componentes-ferramenta
+            └── *Tool.tsx        # 18 componentes-ferramenta
 ```
 
 ## Padrões arquiteturais utilizados
