@@ -37,17 +37,6 @@ Definido em `app/package.json`:
 - `main.cjs` (dev) faz `loadURL('http://localhost:1234')`.
 - `vite.config.ts` define `server: { port: 1234, strictPort: true }` — casa com o `wait-on tcp:1234` e o `loadURL(:1234)`. (Antes o Vite subia na 5173 default e o fluxo dev não destravava — corrigido.)
 
-> ⚠️ **Electron em NixOS:** o binário `electron@41` baixado pelo npm não roda direto (`libglib-2.0.so.0: cannot open shared object file`). O `shell.nix` na raiz resolve isso: traz `nodejs_24` + `electron_41` do nixpkgs e exporta `ELECTRON_OVERRIDE_DIST_PATH`, fazendo o pacote npm `electron` usar o binário do nixpkgs. Entra com `nix-shell` ou automático via `.envrc` (`direnv allow`). Não afeta o empacotamento (`npm run dist` baixa o dist oficial p/ AppImage portável).
->
-> `ELECTRON_OVERRIDE_DIST_PATH` aponta para `${electron}/bin` (o **wrapper**), não para `${electron}/libexec/electron` (o binário cru). O `index.js` do pacote npm faz `path.join(EODP, "electron")`. O binário cru, rodado sem as envs que o wrapper exporta (`GDK_PIXBUF_MODULE_FILE`, `XDG_DATA_DIRS`, `GIO_EXTRA_MODULES`, `CHROME_DEVEL_SANDBOX`), bate num `CHECK()` do Chromium logo no start e aborta com **`SIGILL`** (`electron exited with signal SIGILL`) — acontecia até no `electron --version`. Se voltar a aparecer SIGILL depois de mexer no `shell.nix`, rode `direnv reload` (o shell antigo mantém o valor velho em memória).
-
-## Ambiente reprodutível (Nix)
-
-- `shell.nix` (raiz) — `nodejs_24`, `electron_41`, `resvg` (regen do ícone) + `ELECTRON_OVERRIDE_DIST_PATH = "${electron}/bin"` (wrapper — ver ressalva acima).
-- `.envrc` — `use nix` (nix-direnv). `direnv allow` uma vez → o shell carrega ao entrar na pasta.
-- `.gitignore` (raiz) — ignora `.direnv/` e `result*`.
-- Ainda **sem** `engines`/`.nvmrc` no `app/package.json` (o `shell.nix` cobre a versão de Node em dev).
-
 ## Configuração de runtime
 
 | Item | Fonte | Valor |
@@ -58,7 +47,11 @@ Definido em `app/package.json`:
 | Janela | hardcoded em `main.cjs` | 1000×700, mín. 800×600, `autoHideMenuBar`, `backgroundColor: #0f172a` |
 
 - **Sem** arquivo `.env` (e `.env*` está no `.gitignore`).
-- **Sem** `engines` no `package.json`, **sem** `.nvmrc` / `.node-version` → versão de Node/npm requerida: **Não identificado**.
+- Versão de Node requerida: **`^24`** — declarada em `engines.node` (`app/package.json`) e `app/.node-version`. Sem `.nvmrc` (redundante com `.node-version`, não adicionado).
+
+> ⚠️ **Node 26 quebra a extração do binário do Electron.** Foi observado empiricamente (Node 26.8.1 via `mise`) que o `npm install`/postinstall do pacote `electron` falha **silenciosamente**: `extract-zip@2.0.1` (→ `yauzl@2.10.0`) não descompacta o zip baixado (~117 MB, contém um binário de ~206 MB) — o processo termina com exit code 0, sem erro, mas `node_modules/electron/dist/` fica incompleto (só a pasta `locales/`), e `npm run dev`/`electron .` falha com `Error: Electron failed to install correctly, please delete node_modules/electron and try installing again`. Reproduzido e comparado lado a lado: **Node 24.21.0 extrai o mesmo zip normalmente** (< 1s). Causa exata não identificada (suspeita: regressão em streams/zlib do Node 26 interagindo com o `yauzl` 2.x, que está sem manutenção ativa). É por isso que a versão de Node deste projeto está fixada em `^24` (`engines` + `.node-version`).
+>
+> Se isso voltar a acontecer (build "instalado" mas `node_modules/electron/dist/` sem o binário `electron`): confirmar a versão do Node ativa (`node -v`), trocar para `^24`, rodar `rm -rf node_modules/electron && npm install` (ou `npm rebuild electron`) de novo.
 
 ## Versões de plataforma (declaradas em `app/package.json`)
 
@@ -68,7 +61,7 @@ Definido em `app/package.json`:
 | Vite | `^8.0.0` |
 | React / React DOM | `^19.2.4` |
 | TypeScript | `~5.9.3` |
-| Node (dev/build) | Não identificado |
+| Node (dev/build) | `^24` (`engines.node` + `app/.node-version`) |
 
 ## Repositório
 

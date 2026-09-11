@@ -1,7 +1,7 @@
 # Roadmap / Backlog
 
 > Lista priorizada de melhorias e ideias. **Não é compromisso com datas** — é de onde puxar a próxima coisa.
-> Origem: revisão do código em 2026-09-10 (após a branch `fix/build-lint-green`, que destravou `lint`/`build`, empacotou o electron-builder, deixou a fonte offline e adicionou o `shell.nix`).
+> Origem: revisão do código em 2026-09-10 (após a branch `fix/build-lint-green`, que destravou `lint`/`build`, empacotou o electron-builder e deixou a fonte offline).
 
 ## Como usar
 
@@ -59,12 +59,13 @@
 ### 2.2 CI no GitHub Actions · P
 - **O quê:** workflow que roda `npm ci && npm run lint && npm run build && npm test` em PR; e `npm run dist` + upload da AppImage em push de tag `v*`.
 - **Por quê:** hoje nada valida uma mudança antes do merge (ver `docs/infrastructure.md` — "CI/CD: não existe").
-- **Toca em:** `.github/workflows/ci.yml`. Runner `ubuntu-latest`, Node 24 (casar com o `shell.nix`).
+- **Toca em:** `.github/workflows/ci.yml`. Runner `ubuntu-latest`, Node 24 (casar com `engines.node` em `app/package.json`).
 
-### 2.3 Limpeza de dependências mortas · P
+### 2.3 Limpeza de dependências mortas · P · ✅ parcialmente feito
 - **O quê:** remover `node-forge`, `@types/node-forge`, `@types/qrcode.react` (v4 traz tipos), avaliar `@types/diff`; apagar `app/test-forge.js`.
 - **Por quê:** resíduo da abordagem antiga de RSA (ver `docs/decisions.md` D7); ruído no `package.json`.
-- **Toca em:** `app/package.json`, `app/package-lock.json`, deletar `app/test-forge.js`, atualizar `docs/dependencies.md` e `docs/testing.md`.
+- **Entregue:** `node-forge`, `@types/node-forge` removidos de `app/package.json`/`package-lock.json`; `app/test-forge.js` apagado.
+- **Falta:** avaliar/remover `@types/qrcode.react` (tipos da v1 para lib na v4) e `@types/diff` (possível redundância).
 
 ### 2.4 Endurecer a segurança do Electron · M
 - **O quê:** `contextIsolation: true` + `nodeIntegration: false` + `contextBridge` no `preload.cjs` expondo só o necessário (hoje: nada); adicionar `<meta http-equiv="Content-Security-Policy">` no `index.html`.

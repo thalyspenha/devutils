@@ -6,7 +6,7 @@
 
 - Todo o processamento é **local**, no renderer. Não há backend, banco de dados, API de rede, autenticação, filas ou persistência.
 - O código-fonte da aplicação fica em **`app/`** (a raiz do repositório não tem `package.json`). **Rode todos os comandos npm dentro de `app/`.**
-- Ambiente de dev via Nix: `shell.nix` na raiz (`nodejs_24` + `electron_41` + `ELECTRON_OVERRIDE_DIST_PATH`, necessário porque o Electron do npm não linka no NixOS). `nix-shell` ou `direnv allow` (`.envrc` = `use nix`).
+- **Node `^24` é obrigatório** (`app/.node-version`, `engines.node` em `app/package.json`) — Node 26 quebra silenciosamente a extração do binário do Electron no `npm install` (ver `docs/infrastructure.md` e `docs/decisions.md` D18).
 - Idioma: a UI mistura PT-BR e inglês; **novas strings de UI devem ser em PT-BR**.
 
 ## 2. Stack
@@ -30,12 +30,14 @@ Electron main (app/main.cjs)  ──cria──►  BrowserWindow única
         │
         └─► Renderer: React SPA (app/src)
               main.tsx → App.tsx (<HashRouter>)
-                 ├── <Sidebar/>  — nav a partir do array TOOLS[]
-                 └── <Routes>    — 1 rota → 1 componente-ferramenta (app/src/components/*Tool.tsx)
+                 ├── <Sidebar/>         — nav a partir do array TOOLS[] (app/src/tools.ts)
+                 ├── <CommandPalette/>  — busca fuzzy (Ctrl/Cmd+K), mesmo array TOOLS[]
+                 └── <Routes>           — 1 rota → 1 componente-ferramenta (app/src/components/*Tool.tsx),
+                                           envolvidas por <ErrorBoundary resetKey={rota}>
 ```
 
 - **Sem IPC** entre main e renderer. **Sem estado global** — cada ferramenta usa `useState`/`useEffect`/`useMemo`.
-- Único código compartilhado de comportamento: `app/src/hooks/useClipboardData.ts` (auto-preenche input a partir do clipboard).
+- Código compartilhado de comportamento (`app/src/hooks/`): `useClipboardData.ts` (auto-preenche input a partir do clipboard) e `useCopy.ts` (feedback "Copiado!" nos botões de copiar).
 - Padrão de ferramenta: input controlado → cálculo derivado ao vivo → output read-only, dentro de `.tool-header` + `.tool-body`.
 
 ## 4. Regras importantes
@@ -52,7 +54,7 @@ Electron main (app/main.cjs)  ──cria──►  BrowserWindow única
 - **Adicionar uma ferramenta nova** (3 pontos):
   1. Criar `app/src/components/NomeTool.tsx` com **export nomeado** (`export function NomeTool()`), sem props.
   2. Registrar a rota em `app/src/App.tsx` (`<Route path="/x" element={<NomeTool />} />`).
-  3. Adicionar item no array `TOOLS[]` de `app/src/components/Sidebar.tsx` (`id`, `name` em PT-BR, `icon` do `lucide-react`, `path`).
+  3. Adicionar item no array `TOOLS[]` de `app/src/tools.ts` (`id`, `name` em PT-BR, `icon` do `lucide-react`, `path`) — fonte única consumida por `Sidebar` e `CommandPalette`.
 - Estilo: usar CSS vars (`var(--text-primary)`, `var(--accent-color)`, `var(--error-color)`, `var(--border-color)`, `var(--app-bg)`…), classes utilitárias existentes (`flex`, `flex-col`, `flex-1`, `glass-panel`, `secondary`) e `style={{}}` inline para ajustes. Sem CSS novo global salvo necessidade real.
 - Lógica **inline no componente** — não criar hooks/abstrações novas sem motivo.
 - Cálculo derivado em `useMemo` (preferir sobre `useEffect` + estado espelho — o `eslint-plugin-react-hooks` v7 barra `setState` dentro de efeito/render); try/catch em volta de parsers, erro em `var(--error-color)` sem apagar o input.
@@ -72,9 +74,9 @@ Documentação detalhada em **`/docs`**:
 | [`docs/database.md`](docs/database.md) | (Não aplicável — sem banco / sem persistência) |
 | [`docs/api.md`](docs/api.md) | Rotas do renderer + APIs de plataforma (Web/Electron). Sem API HTTP. |
 | [`docs/business-rules.md`](docs/business-rules.md) | Regras e heurísticas de cada ferramenta |
-| [`docs/integrations.md`](docs/integrations.md) | Integrações externas (praticamente nenhuma; só Google Fonts) |
-| [`docs/infrastructure.md`](docs/infrastructure.md) | Build/empacotamento, scripts, inconsistência de porta dev, ausência de Docker/CI |
-| [`docs/testing.md`](docs/testing.md) | Estratégia de verificação (lint + manual); `test-forge.js` |
+| [`docs/integrations.md`](docs/integrations.md) | Integrações externas (nenhuma — app 100% offline, fonte Inter empacotada localmente) |
+| [`docs/infrastructure.md`](docs/infrastructure.md) | Build/empacotamento, scripts, versão de Node exigida, ausência de Docker/CI |
+| [`docs/testing.md`](docs/testing.md) | Estratégia de verificação (lint + manual) |
 | [`docs/dependencies.md`](docs/dependencies.md) | Todas as dependências e para que servem |
 | [`docs/decisions.md`](docs/decisions.md) | Decisões de arquitetura e divergências código × specs |
 | [`docs/roadmap.md`](docs/roadmap.md) | Backlog priorizado: melhorias de UX/infra, ferramentas novas, dívida técnica conhecida |

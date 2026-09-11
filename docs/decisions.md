@@ -54,9 +54,10 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 ## D7 — WebCrypto para RSA (abandono de `node-forge`)
 
 - **Decisão:** `RsaGeneratorTool` usa `window.crypto.subtle` (WebCrypto), não `node-forge`.
-- **Evidência:** o componente; `node-forge` só aparece em `app/test-forge.js`.
-- **Racional:** Não identificado. Inferência a partir de `test-forge.js`: houve uma tentativa com `node-forge` (`publicKeyToRSAPublicKeyPem`) que foi substituída por WebCrypto. A dependência `node-forge` e `@types/node-forge` ficaram no `package.json`.
+- **Evidência:** o componente. Até esta limpeza, `node-forge` só aparecia em `app/test-forge.js` (script ad-hoc).
+- **Racional:** Não identificado. Inferência a partir do extinto `test-forge.js`: houve uma tentativa com `node-forge` (`publicKeyToRSAPublicKeyPem`) que foi substituída por WebCrypto.
 - **Consequência:** as chaves geradas são RSA-OAEP com uso `encrypt`/`decrypt` — não servem para assinatura.
+- **Atualização:** `node-forge`, `@types/node-forge` e `app/test-forge.js` foram removidos do projeto (dependência morta, sem uso pelo app real). Ver `docs/dependencies.md` e `docs/testing.md`.
 
 ## D8 — Estilização com CSS único + variáveis + utilitários artesanais
 
@@ -72,11 +73,12 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 - **Racional:** Não identificado; consistente com UX de "ferramenta instantânea". Exceções são operações caras / com ação explícita (RSA, senha, geração de UUID em lote, geração de JWT, timestamp→data).
 - **Nota de implementação:** originalmente algumas tools sincronizavam o output em `useState` via `useEffect`; migrado para `useMemo` derivado puro (o `eslint-plugin-react-hooks` v7 barra `setState` dentro de efeito/render).
 
-## D10 — Registro de ferramenta em dois pontos
+## D10 — Registro de ferramenta em dois (hoje, três) pontos
 
-- **Decisão:** adicionar uma ferramenta = criar o componente + adicionar `<Route>` em `App.tsx` + adicionar item no array `TOOLS[]` de `Sidebar.tsx`.
+- **Decisão:** adicionar uma ferramenta = criar o componente + adicionar `<Route>` em `App.tsx` + adicionar item no array `TOOLS[]`.
 - **Evidência:** os planos descrevem exatamente esses passos; o histórico do SQL Formatter (commits `9ae9c28`, `c423920`) segue isso.
 - **Racional:** Não identificado (não há mecanismo de registro automático/derivado).
+- **Atualização (pós-D17):** `TOOLS[]` morava em `Sidebar.tsx` na época desta decisão; foi extraído para `src/tools.ts` (ver D17) para ser compartilhado com `CommandPalette`. O passo 3 do fluxo de "adicionar ferramenta" hoje é editar `src/tools.ts`, não `Sidebar.tsx`.
 
 ## D11 — Sem testes automatizados
 
@@ -108,17 +110,19 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 - **Evidência:** `src/hooks/useClipboardData.ts`, commit `7a24379`.
 - **Racional:** o `eslint-plugin-react-hooks` v7 (`set-state-in-effect`) barra `setState` sincronizado dentro de efeito; a API de callback resolve isso e ainda cancela o timer no unmount.
 
-## D16 — `ELECTRON_OVERRIDE_DIST_PATH` aponta para o wrapper (`bin/`), não o binário cru
-
-- **Decisão:** no `shell.nix`, `ELECTRON_OVERRIDE_DIST_PATH = "${electron}/bin"` (era `"${electron}/libexec/electron"`).
-- **Evidência:** `shell.nix`; `node_modules/electron/index.js` faz `path.join(EODP, "electron")`.
-- **Racional:** o binário em `libexec/electron/electron`, rodado sem as envs que o wrapper `bin/electron` exporta (`GDK_PIXBUF_MODULE_FILE`, `XDG_DATA_DIRS`, `GIO_EXTRA_MODULES`, `CHROME_DEVEL_SANDBOX`), bate num `CHECK()` do Chromium no start e aborta com `SIGILL` — até no `electron --version`. Apontar para o wrapper resolve. Ver `docs/infrastructure.md`.
-
 ## D17 — Command palette, error boundary e `useCopy`
 
 - **Decisão:** (1) lista de ferramentas extraída para `src/tools.ts` (consumida por `Sidebar` + `CommandPalette`); (2) `<CommandPalette/>` com busca fuzzy inline (sem lib), atalho `Ctrl`/`Cmd`+`K`; (3) `<ErrorBoundary>` (class component) em volta das rotas, reseta ao trocar de rota; (4) hook `useCopy` para o feedback "Copiado!" em todos os botões de copiar.
 - **Evidência:** `src/tools.ts`, `src/components/CommandPalette.tsx`, `src/components/ErrorBoundary.tsx`, `src/hooks/useCopy.ts`; merge `28bbfdd`.
 - **Racional:** itens 1.1/1.3/1.4 do `docs/roadmap.md`. Sem lib de estado, sem toast/portal novo, seguindo as restrições do `CLAUDE.md`.
+
+## D18 — Node fixado em `^24` (`engines` + `.node-version`)
+
+- **Decisão:** `app/package.json` ganhou `engines.node: "^24"` e foi criado `app/.node-version` com `24`.
+- **Evidência:** diagnosticado numa sessão de troubleshooting (2026-09-11): rodando `npm install` com **Node 26.8.1** (via `mise`), o postinstall do pacote `electron` falha **silenciosamente** — `extract-zip@2.0.1`/`yauzl@2.10.0` não descompacta o zip do binário (~117 MB baixado, contém um executável de ~206 MB): o processo termina com exit code 0, sem nenhum erro impresso, mas `node_modules/electron/dist/` fica incompleto. Sintoma no `npm run dev`: `Error: Electron failed to install correctly, please delete node_modules/electron and try installing again`.
+- **Racional:** comparação lado a lado confirmou que **Node 24.21.0 extrai o mesmo zip normalmente** (<1s). O projeto já assumia Node 24 implicitamente (`@types/node: ^24.12.0`), só não estava declarado. Fixar a versão evita esse bug de compatibilidade.
+- **Consequência:** fecha a lacuna "versão de Node: Não identificado" que existia em `docs/infrastructure.md`. Causa raiz exata do bug do `extract-zip`/`yauzl` no Node 26 não foi investigada a fundo (biblioteca sem manutenção ativa); a mitigação é não usar Node 26 neste projeto, não um patch na lib.
+- **Ver também:** `docs/infrastructure.md` (ressalva sobre o bug).
 
 ---
 

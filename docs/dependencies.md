@@ -16,7 +16,6 @@
 | `sql-formatter` | `^15.8.2` | `SqlFormatterTool` | Formatação de SQL multi-dialeto (`format`) |
 | `diff` | `^9.0.0` | `TextDiffTool` (`import * as Diff`) | Diff de texto por linha (`diffLines`) |
 | `qrcode.react` | `^4.2.0` | `QrCodeGeneratorTool` | Componente `QRCodeSVG` |
-| `node-forge` | `^1.4.0` | **apenas `app/test-forge.js`** | Geração/export de RSA em PEM. **Não é importado por nenhum componente** — `RsaGeneratorTool` usa WebCrypto. Candidato a remoção. |
 
 ## Desenvolvimento (`devDependencies`)
 
@@ -53,7 +52,6 @@
 | `@types/react-dom` | `^19.2.3` | Tipos ReactDOM |
 | `@types/crypto-js` | `^4.2.2` | Tipos para `crypto-js` (a lib não é tipada) |
 | `@types/diff` | `^7.0.2` | Tipos para `diff`. Nota: `diff` v9 já embute tipos próprios — este pacote pode ser redundante. |
-| `@types/node-forge` | `^1.3.14` | Tipos para `node-forge`, que só é usado em `test-forge.js` (CommonJS, sem checagem de tipo). Candidato a remoção junto com `node-forge`. |
 | `@types/qrcode.react` | `^1.0.5` | Pacote de tipos da **v1** de `qrcode.react`. A dependência instalada é **v4**, que traz tipos próprios. Provavelmente redundante/incorreto. |
 
 ## Observações gerais
@@ -61,5 +59,5 @@
 - **Lockfile:** `app/package-lock.json` (npm, `lockfileVersion: 3`). O `package-lock.json` da raiz é um stub vazio.
 - **Sem `overrides`, `resolutions` ou `peerDependencies`** declaradas.
 - **Sem dependências nativas** (todas as libs são JS puro), o que simplifica o empacotamento com electron-builder.
-- **Pacotes possivelmente desnecessários:** `node-forge`, `@types/node-forge`, `@types/qrcode.react`, e possivelmente `@types/diff`. (Marcado como observação — não foi removido nada.)
+- **Pacotes possivelmente desnecessários:** `@types/qrcode.react` (tipos da v1 para uma lib na v4) e possivelmente `@types/diff`. (`node-forge` e `@types/node-forge` já foram removidos — eram dependência morta, usada só pelo extinto `app/test-forge.js`.)
 - **Versões pré-lançamento aparente:** `vite ^8.0.0`, `electron ^41`, `react ^19.2` — versões altas; compatibilidade não verificada em execução neste ambiente de análise (sem `node_modules`).

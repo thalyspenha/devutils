@@ -1,6 +1,6 @@
 # Arquitetura
 
-> Documento baseado no código em `main` (último commit analisado: `874267f`).
+> Documento baseado no código em `main` (último commit analisado: `33696b2`).
 > O que não pôde ser determinado pelo código está marcado como **Não identificado**.
 
 ## Visão geral
@@ -132,7 +132,6 @@ devutils/
     ├── vite.config.ts
     ├── tsconfig*.json
     ├── eslint.config.js
-    ├── test-forge.js           # script manual ad-hoc (ver docs/testing.md)
     ├── package.json            # inclui o bloco "build" do electron-builder
     ├── build/                  # icon.png (512x512) + icon.svg — recursos do electron-builder
     ├── public/                 # favicon.svg, icons.svg

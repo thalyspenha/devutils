@@ -32,19 +32,9 @@ Evidências:
 
 O plano `docs/superpowers/plans/2026-07-14-sql-query-formatter.md` descreve um roteiro manual de verificação (rodar `npm run dev`, colar SQL, trocar dialeto, testar SQL inválido, testar botão copiar, conferir console do DevTools). É o padrão de QA do projeto.
 
-## `app/test-forge.js`
+## `app/test-forge.js` (removido)
 
-Script Node **ad-hoc**, fora de qualquer framework:
-
-```js
-const forge = require('node-forge');
-const keypair = forge.pki.rsa.generateKeyPair({ bits: 1024, e: 0x10001 });
-console.log(forge.pki.publicKeyToRSAPublicKeyPem(keypair.publicKey));
-```
-
-- Executado manualmente com `node test-forge.js`.
-- Testa a biblioteca `node-forge` (geração de par RSA + export PEM).
-- **Divergência:** o componente `RsaGeneratorTool.tsx` **não usa `node-forge`** — usa `window.crypto.subtle` (WebCrypto). Este script parece ser resíduo de uma abordagem anterior/descartada. Ver `docs/dependencies.md` e `docs/decisions.md`.
+Existia um script Node ad-hoc (`app/test-forge.js`) que testava a lib `node-forge` para geração de par RSA + export PEM — resíduo de uma abordagem anterior ao `RsaGeneratorTool` atual, que usa `window.crypto.subtle` (WebCrypto). O script e a dependência `node-forge` (+ `@types/node-forge`) foram removidos por serem código/dependência morta, sem uso pelo app real. Ver `docs/dependencies.md` e `docs/decisions.md` (D7).
 
 ## Cobertura
 
