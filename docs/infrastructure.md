@@ -58,11 +58,21 @@ Definido em `app/package.json`:
 >
 > Ambiente local com `mise`: mesmo com `app/.node-version` em `24`, o shim do `mise` pode resolver `node`/`npm` para a versão global (ex.: `26.8.1` em `~/.config/mise/config.toml`) se o Node 24 não estiver "ativo" na shell (comportamento observado 2026-09-11). Sintoma: `node -v` na raiz do `app/` mostra 26 mesmo com o `.node-version` presente. Contorno confirmado: `mise install node@24` (se ainda não instalado) e prefixar os comandos com `mise exec node@24 -- npm ...` (ex.: `mise exec node@24 -- npm install`, `... npm run build`, `... npm test`) — não precisa mudar a config global do `mise`.
 
+## Ambiente NixOS (`shell.nix` + `.envrc`)
+
+Na raiz do repositório há `shell.nix` (carregado pelo direnv via `.envrc` = `use nix`) com:
+
+- `nodejs_24` — versão de Node exigida.
+- `electron_44` + `ELECTRON_OVERRIDE_DIST_PATH` / `ELECTRON_SKIP_BINARY_DOWNLOAD` — o binário que o pacote npm `electron` baixa não roda no NixOS (sem `/lib` FHS: `libglib-2.0.so.0: cannot open shared object file`). Em dev, `electron .` usa o binário do nixpkgs (44.3.0); o `electron-builder` continua empacotando o Electron do npm (44.5.1).
+- `fpm` + `USE_SYSTEM_FPM=true` — o `fpm` pré-compilado que o electron-builder baixa para o target `deb` também não roda no NixOS (`spawn … fpm ENOENT`); com o `fpm` do nixpkgs o `.deb` é gerado normalmente.
+
+Verificado em 2026-10-06: `npm run lint`, `npm test`, `npm run build`, `npm run dev` e `npm run dist` (AppImage + `.deb`) funcionando dentro do `shell.nix`.
+
 ## Versões de plataforma (declaradas em `app/package.json`)
 
 | Componente | Versão declarada |
 |---|---|
-| Electron | `^41.0.2` |
+| Electron | `^44.5.1` |
 | Vite | `^8.0.0` |
 | React / React DOM | `^19.2.4` |
 | TypeScript | `~5.9.3` |

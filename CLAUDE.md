@@ -13,7 +13,7 @@
 
 | Camada | Tecnologia |
 |---|---|
-| Shell desktop | Electron `^41` (`app/main.cjs`, `app/preload.cjs`) |
+| Shell desktop | Electron `^44` (`app/main.cjs`, `app/preload.cjs`) |
 | UI | React `19` + TypeScript `~5.9`, `react-router-dom` `7` (`HashRouter`) |
 | Build | Vite `^8` + `@vitejs/plugin-react` (`npm run build` = `tsc -b && vite build`); empacotamento `electron-builder -l` via `npm run dist` |
 | Ícones | `lucide-react` |
@@ -45,7 +45,7 @@ Electron main (app/main.cjs)  ──cria──►  BrowserWindow única
 - **Não** adicionar backend, chamadas de rede, banco ou persistência. O app é offline por design (privacidade: dados do usuário nunca saem da máquina).
 - **Não** introduzir Tailwind, CSS-in-JS ou biblioteca de estado global.
 - Preferir **biblioteca pronta** a implementar lógica complexa de parsing/formatação (padrão do projeto).
-- `webPreferences` do Electron usa `contextIsolation: false` / `nodeIntegration: true` (decisão de MVP — ver `docs/decisions.md`). Não depender disso para expor APIs novas sem antes revisar segurança.
+- `webPreferences` do Electron usa `nodeIntegration: false` / `contextIsolation: true` / `sandbox: true`, com CSP restritiva via `<meta>` em `app/index.html` (ver `docs/decisions.md` D3). O renderer não tem acesso a Node; expor qualquer API nova exige `contextBridge` no `preload.cjs` e revisão de segurança antes.
 - Produção roda sob `file://` → manter `HashRouter` (não trocar por `BrowserRouter`).
 - Ao mexer em erros de libs, truncar mensagens ruidosas (ex.: SQL Formatter mostra só a 1ª linha do erro).
 
@@ -60,7 +60,7 @@ Electron main (app/main.cjs)  ──cria──►  BrowserWindow única
 - Cálculo derivado em `useMemo` (preferir sobre `useEffect` + estado espelho — o `eslint-plugin-react-hooks` v7 barra `setState` dentro de efeito/render); try/catch em volta de parsers, erro em `var(--error-color)` sem apagar o input.
 - `useClipboardData(onData)`: retorna uma função `paste()` para ligar num botão explícito ("Colar da área de transferência") — não ler o clipboard automaticamente no mount de uma ferramenta.
 - Commits: mensagens curtas em PT-BR, prefixo `feat:` / `fix:` / `docs:` (padrão observável no histórico recente).
-- Verificação antes de commitar: `cd app && npm run lint && npm test && npm run build` (lint + Vitest + `tsc -b` + `vite build`, todos verdes) e teste manual com `cd app && npm run dev`. Se `node -v` não mostrar `24.x` (ex.: `mise` resolvendo a versão global), prefixar com `mise exec node@24 --` — Node 26 quebra a extração do binário do Electron no `npm install` (ver `docs/infrastructure.md`, D18).
+- Verificação antes de commitar: `cd app && npm run lint && npm test && npm run build` (lint + Vitest + `tsc -b` + `vite build`, todos verdes) e teste manual com `cd app && npm run dev`. Se `node -v` não mostrar `24.x` (ex.: `mise` resolvendo a versão global), prefixar com `mise exec node@24 --` — Node 26 quebra a extração do binário do Electron no `npm install` (ver `docs/infrastructure.md`, D18). No NixOS, usar o `shell.nix` da raiz (direnv) — fornece Node 24, Electron e `fpm` do nixpkgs.
 - ⚠️ `tsc -b` roda com `noUnusedLocals`/`noUnusedParameters`: nada de imports/vars/params não usados (ex.: `import React` sem uso quebra o build). `catch (e)` sem uso → usar `catch {}`.
 
 ## 6. Documentação

@@ -26,7 +26,7 @@
 | `vite` | `^8.0.0` | Dev server + bundler do renderer |
 | `@vitejs/plugin-react` | `^6.0.0` | Suporte a React/JSX/Fast Refresh no Vite |
 | `typescript` | `~5.9.3` | Compilador / type-check (`tsc -b`) |
-| `electron` | `^41.0.2` | Runtime desktop |
+| `electron` | `^44.5.1` | Runtime desktop (atualizado de 41 → 44, ver `docs/decisions.md` D24) |
 | `electron-builder` | `^26.8.1` | Empacotamento Linux/AppImage (`npm run dist`); config no bloco `build` do `package.json` |
 | `concurrently` | `^9.2.1` | Roda `vite` + `electron:dev` juntos |
 | `cross-env` | `^10.1.0` | Define `NODE_ENV` de forma portável |

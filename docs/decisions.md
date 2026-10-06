@@ -164,6 +164,12 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 - **Consequência / verificado:** `mise exec node@24 -- npm run dist` gerou `release/DevUtils-0.0.0.AppImage` (~119 MB) com sucesso; `.desktop` extraído de dentro do AppImage confirma todos os campos novos (`GenericName=Utilitários para desenvolvedores`, `Keywords=json;base64;jwt;…`, `Categories=Development;`). O target `deb` **falhou neste ambiente** (Arch Linux): o `fpm` (Ruby) baixado sob demanda pelo electron-builder precisa de `libcrypt.so.1`, ausente por padrão no Arch (migrou pra `libxcrypt` sem essa soname legada; precisaria do pacote `libxcrypt-compat`). Perguntado ao usuário se deveria instalar via `sudo pacman` pra validar de ponta a ponta — resposta: não, deixar configurado sem build local. A config em si é válida e deve funcionar normalmente em Debian/Ubuntu ou CI baseado nessas distros.
 - **Ver também:** `docs/infrastructure.md` (ressalva do `.deb` no Arch).
 
+## D24 — Electron 41 → 44 + `npm audit fix`
+
+- **Decisão:** `electron` de `^41.0.2` para `^44.5.1` (`allowScripts` acompanhou: `electron@44.5.1`); `npm audit fix` atualizou no lockfile, dentro dos ranges existentes, `electron-builder` (26.8.1 → 26.17.0), `vite` (8.0.0 → 8.3.3) e `concurrently` (9.2.1 → 9.2.4), entre outras transitivas.
+- **Racional:** `npm audit` (2026-10-06) apontava 36 vulnerabilidades (3 críticas, 25 altas). `npm audit --omit=dev` = 0 — as `dependencies` de runtime estavam limpas; o problema estava no toolchain e, principalmente, no próprio `electron` 41.0.2, que é distribuído dentro do app (≈25 advisories, incl. bypass de `contextIsolation` via `Function.prototype.bind` e falhas de sandbox de popups/iframes). A linha 41 está EOL (o nixpkgs a marca como insegura); 44 era a `latest` do npm e existe no nixpkgs (`electron_44`). O app só usa `BrowserWindow`, `shell.openExternal`, `setWindowOpenHandler` e preload vazio, então o salto de 3 majors era de baixo risco.
+- **Consequência / verificado:** lint, 29 testes, `build`, `dev` (Electron 44.3.0 do nixpkgs) e `dist` (AppImage + `.deb` com Electron 44.5.1) ok. Restam 9 alertas (8 moderados, 1 alto), todos em ferramentas de build/lint sem correção compatível: `brace-expansion` (via `minimatch` de `eslint` 9 e do `electron-builder`) e `sprintf-js` (via `@electron/get` → `global-agent` → `roarr`, no `electron-builder`; o `audit fix --force` proposto faria *downgrade* do electron-builder para 26.5.0, então não foi aplicado). Nenhum entra no app empacotado.
+
 ---
 
 ## Divergências entre decisão documentada e código
@@ -177,7 +183,7 @@ Esses documentos referenciam um `CLAUDE.md` e um "padrão de componente" do proj
 
 ## Itens sem decisão documentada (Racional: Não identificado)
 
-- Escolha das versões de Electron 41 / Vite 8 / React 19.
+- Escolha das versões de Vite 8 / React 19 (Electron: ver D24).
 - Mistura de idiomas nos **títulos** (`<h2>`) das tools, que continuam em inglês ("JSON Formatter", "RegExp Tester", "Base64 Encoder/Decoder"…) para bater com o nome em `TOOLS[]`/Sidebar — decisão implícita ao resolver o item 1.5 do roadmap, nunca declarada explicitamente. O restante da UI (descrições, labels, botões, placeholders, mensagens de erro/estado) já é PT-BR em todas as 15 tools.
 - Ausência de CI e Dockerfile — avaliado e descartado deliberadamente (CI chegou a entrar no `docs/roadmap.md` como item 2.2 e foi removido a pedido: não considerado necessário para um app desktop de uso pessoal sem colaboradores).
 
